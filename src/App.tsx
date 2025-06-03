@@ -3,6 +3,7 @@ import { JobCard } from './components/JobCard';
 import { Header } from './components/Header';
 import { UserProfile } from './components/UserProfile';
 import { EditProfile } from './components/EditProfile';
+import { LikedJobs } from './components/LikedJobs';
 import { jobs } from './data/jobs';
 import { currentUser } from './data/user';
 import type { Job } from './types/job';
@@ -17,6 +18,7 @@ function App() {
   );
   const [showProfile, setShowProfile] = useState(false);
   const [showEditProfile, setShowEditProfile] = useState(false);
+  const [showLikedJobs, setShowLikedJobs] = useState(false);
   const [user, setUser] = useState<User>(currentUser);
 
   const handleLike = () => {
@@ -50,6 +52,10 @@ function App() {
     setShowEditProfile(true);
   };
 
+  const handleLikedJobsClick = () => {
+    setShowLikedJobs(true);
+  };
+
   const handleSavePreferences = (preferences: string[]) => {
     setUser((prev) => ({
       ...prev,
@@ -73,6 +79,7 @@ function App() {
           likedCount={likedJobs.length}
           onProfileClick={handleProfileClick}
           onSettingsClick={handleSettingsClick}
+          onLikedJobsClick={handleLikedJobsClick}
         />
       </div>
 
@@ -157,6 +164,13 @@ function App() {
         isOpen={showEditProfile}
         onClose={() => setShowEditProfile(false)}
         onSave={handleSavePreferences}
+      />
+
+      {/* Liked Jobs Modal */}
+      <LikedJobs
+        likedJobs={likedJobs}
+        isOpen={showLikedJobs}
+        onClose={() => setShowLikedJobs(false)}
       />
     </div>
   );

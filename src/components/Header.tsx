@@ -13,6 +13,7 @@ interface HeaderProps {
   likedCount: number;
   onProfileClick: () => void;
   onSettingsClick: () => void;
+  onLikedJobsClick: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -20,38 +21,17 @@ export const Header: React.FC<HeaderProps> = ({
   likedCount,
   onProfileClick,
   onSettingsClick,
+  onLikedJobsClick,
 }) => {
   return (
     <header className='bg-white/95 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-50'>
       <div className='max-w-md mx-auto md:max-w-4xl lg:max-w-6xl xl:max-w-7xl px-4 py-3'>
         <div className='flex items-center justify-between'>
-          {/* Left side - Menu and Navigation */}
+          {/* Left side - Menu */}
           <div className='flex items-center space-x-4'>
             <button className='p-2 rounded-lg hover:bg-gray-100 transition-colors md:hidden'>
               <Bars3Icon className='h-6 w-6 text-gray-600' />
             </button>
-
-            {/* Desktop Navigation */}
-            <nav className='hidden md:flex items-center space-x-6'>
-              <a
-                href='#'
-                className='text-gray-600 hover:text-gray-900 font-medium transition-colors'
-              >
-                Browse Jobs
-              </a>
-              <a
-                href='#'
-                className='text-gray-600 hover:text-gray-900 font-medium transition-colors'
-              >
-                My Applications
-              </a>
-              <a
-                href='#'
-                className='text-gray-600 hover:text-gray-900 font-medium transition-colors'
-              >
-                Companies
-              </a>
-            </nav>
           </div>
 
           {/* Center - Logo and Brand */}
@@ -67,7 +47,10 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Right side - User actions */}
           <div className='flex items-center space-x-2 md:space-x-3'>
             {/* Liked jobs indicator */}
-            <div className='relative'>
+            <button
+              onClick={onLikedJobsClick}
+              className='relative hover:bg-gray-100 rounded-lg transition-colors p-1'
+            >
               <div className='flex items-center space-x-1 bg-green-50 px-2 py-1 rounded-full md:px-3 md:py-2'>
                 <HeartIcon className='h-4 w-4 text-green-500' />
                 <span className='text-sm font-semibold text-green-600 md:text-base'>
@@ -77,7 +60,7 @@ export const Header: React.FC<HeaderProps> = ({
                   Liked
                 </span>
               </div>
-            </div>
+            </button>
 
             {/* Notifications */}
             <button className='p-2 rounded-lg hover:bg-gray-100 transition-colors relative'>
