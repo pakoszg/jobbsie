@@ -57,10 +57,10 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Center - Logo and Brand */}
           <div className='flex items-center space-x-2 md:absolute md:left-1/2 md:transform md:-translate-x-1/2'>
             <div className='w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center'>
-              <span className='text-white font-bold text-sm'>JF</span>
+              <span className='text-white font-bold text-sm'>J</span>
             </div>
             <h1 className='text-lg font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent md:text-xl'>
-              Job Finder
+              Jobbsie
             </h1>
           </div>
 
