@@ -48,7 +48,7 @@ router.post(
       }
 
       // Determine user type
-      const userType = user.applicant ? 'applicant' : 'employer';
+      const userType = user?.applicant_id ? 'applicant' : 'employer';
 
       // Generate JWT token
       const payload = {
@@ -73,7 +73,6 @@ router.post(
           id: user.id,
           email: user.email,
           userType,
-          profile: userType === 'applicant' ? user.applicant : user.employer,
         },
       });
     } catch (error) {
