@@ -29,7 +29,6 @@ export interface AuthResponse {
     id: string;
     email: string;
     userType: 'applicant' | 'employer';
-    profile: any; // This could be applicant or employer profile
   };
 }
 
@@ -62,7 +61,7 @@ export const register = async (
 // Get current user profile
 export const getCurrentUser = async (): Promise<ApiUser> => {
   const { data } = await api.get('/auth/me');
-  return data.user;
+  return data;
 };
 
 // Logout user

@@ -4,6 +4,11 @@ import jwt from 'jsonwebtoken';
 import { body, validationResult } from 'express-validator';
 import { prisma } from '../config/database';
 import { authenticateToken } from '../middleware/auth';
+import {
+  Applicant,
+  Employer,
+  User,
+} from '../../../node_modules/.prisma/client';
 
 const router = express.Router();
 
@@ -109,13 +114,11 @@ router.get(
         return;
       }
 
-      const userType = user.applicant ? 'applicant' : 'employer';
+      const userType = user?.applicant_id ? 'applicant' : 'employer';
 
       res.json({
-        id: user.id,
-        email: user.email,
+        ...user,
         userType,
-        profile: userType === 'applicant' ? user.applicant : user.employer,
       });
     } catch (error) {
       console.error('Get user error:', error);

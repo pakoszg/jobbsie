@@ -13,34 +13,34 @@ export interface User {
 export interface ApiUser {
   id: string;
   email: string;
+  created_at: string;
+  updated_at: string;
+  applicant_id: string | null;
+  employer_id: string | null;
   userType: 'applicant' | 'employer';
-  profile?: ApplicantProfile | EmployerProfile;
-  createdAt?: string;
-  updatedAt?: string;
+  applicant: Applicant | null;
+  employer: Employer | null;
 }
 
-export interface ApplicantProfile {
+export interface Applicant {
   id: string;
-  userId: string;
-  firstName: string;
-  lastName: string;
-  phoneNumber?: string;
+  created_at: string;
+  updated_at: string;
+  first_name: string;
+  last_name: string;
+  phone_number?: string;
   introduction?: string;
-  avatar?: string;
-  location?: string;
-  jobPreferences?: string[];
-  createdAt: string;
-  updatedAt: string;
 }
 
-export interface EmployerProfile {
+export interface Employer {
   id: string;
-  userId: string;
+  created_at: string;
+  updated_at: string;
   name: string;
+  country: string;
+  city: string;
   address: string;
+  postal_code: string;
+  website_url?: string;
   category: string;
-  websiteUrl?: string;
-  avatar?: string;
-  createdAt: string;
-  updatedAt: string;
 }

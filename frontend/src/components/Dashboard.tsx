@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { JobCard } from './JobCard';
 import { Header } from './Header';
 import { UserProfile } from './UserProfile';
@@ -10,7 +10,6 @@ import { useJobs } from '../hooks/useJobs';
 import { useCurrentUser, useLogout } from '../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import type { Job } from '../types/job';
-import type { ApplicantProfile, EmployerProfile } from '../types/user';
 
 export function Dashboard() {
   const [currentView, setCurrentView] = useState<'swipe' | 'browse'>('swipe');
@@ -95,10 +94,6 @@ export function Dashboard() {
     console.log('Saving preferences:', preferences);
   };
 
-  const handleSettingsClick = () => {
-    handleLogout();
-  };
-
   // Show loading spinner while fetching user data
   if (userLoading) {
     return (
@@ -109,7 +104,7 @@ export function Dashboard() {
   }
 
   // Show error if user data failed to load
-  if (userError || !currentUser) {
+  if (!currentUser) {
     return (
       <div className='h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center'>
         <ErrorMessage
@@ -127,22 +122,19 @@ export function Dashboard() {
     id: parseInt(currentUser.id),
     name:
       currentUser.userType === 'applicant'
-        ? `${(currentUser.profile as ApplicantProfile)?.firstName || ''} ${
-            (currentUser.profile as ApplicantProfile)?.lastName || ''
+        ? `${currentUser.applicant?.first_name || ''} ${
+            currentUser.applicant?.last_name || ''
           }`.trim()
-        : (currentUser.profile as EmployerProfile)?.name || currentUser.email,
+        : currentUser.employer?.name || currentUser.email,
     email: currentUser.email,
-    avatar: currentUser.profile?.avatar,
+    avatar: undefined, // No avatar field in current schema
     location:
       currentUser.userType === 'employer'
-        ? (currentUser.profile as EmployerProfile)?.address
-        : (currentUser.profile as ApplicantProfile)?.location || 'Unknown',
-    jobPreferences:
-      currentUser.userType === 'applicant'
-        ? (currentUser.profile as ApplicantProfile)?.jobPreferences || []
-        : [],
+        ? currentUser.employer?.address || 'Unknown'
+        : 'Unknown', // No location field in applicant schema
+    jobPreferences: [], // No job preferences in current schema
     memberSince: new Date(
-      currentUser.createdAt || Date.now()
+      currentUser.created_at || Date.now()
     ).toLocaleDateString('en-US', {
       month: 'long',
       year: 'numeric',
@@ -157,7 +149,6 @@ export function Dashboard() {
           user={user}
           likedCount={likedJobs.length}
           onProfileClick={handleProfileClick}
-          onSettingsClick={handleSettingsClick}
           onLikedJobsClick={handleLikedJobsClick}
           onJobPreferencesClick={handleJobPreferencesClick}
         />
@@ -218,19 +209,9 @@ export function Dashboard() {
                 All done!
               </h2>
               <p className='text-gray-600 mb-4 sm:mb-6 text-sm sm:text-base'>
-                You've gone through all available jobs.
+                You've gone through all available jobs. Please check back later
+                soon for more jobs.
               </p>
-              <button
-                onClick={() => {
-                  setCurrentJobIndex(0);
-                  setLikedJobs([]);
-                  setDislikedJobs([]);
-                  refetch();
-                }}
-                className='bg-gradient-to-r from-blue-500 to-purple-600 text-white px-4 sm:px-6 md:px-8 py-2 sm:py-3 rounded-full font-semibold hover:from-blue-600 hover:to-purple-700 transition-all duration-200 transform hover:scale-105 text-sm sm:text-base'
-              >
-                Start Over
-              </button>
             </div>
           )}
         </div>

@@ -2,7 +2,6 @@ import React from 'react';
 import {
   Bars3Icon,
   BellIcon,
-  Cog6ToothIcon,
   HeartIcon,
   UserCircleIcon,
 } from '@heroicons/react/24/outline';
@@ -12,7 +11,6 @@ interface HeaderProps {
   user: User;
   likedCount: number;
   onProfileClick: () => void;
-  onSettingsClick: () => void;
   onLikedJobsClick: () => void;
   onJobPreferencesClick: () => void;
 }
@@ -21,7 +19,6 @@ export const Header: React.FC<HeaderProps> = ({
   user,
   likedCount,
   onProfileClick,
-  onSettingsClick,
   onLikedJobsClick,
   onJobPreferencesClick,
 }) => {
@@ -78,14 +75,6 @@ export const Header: React.FC<HeaderProps> = ({
             <button className='p-2 rounded-lg hover:bg-gray-100 transition-colors relative'>
               <BellIcon className='h-5 w-5 text-gray-600' />
               <div className='absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full'></div>
-            </button>
-
-            {/* Settings */}
-            <button
-              onClick={onSettingsClick}
-              className='p-2 rounded-lg hover:bg-gray-100 transition-colors'
-            >
-              <Cog6ToothIcon className='h-5 w-5 text-gray-600' />
             </button>
 
             {/* User Avatar and Name */}

@@ -35,11 +35,19 @@ export const UserProfile: React.FC<UserProfileProps> = ({
 
           <div className='flex flex-col md:flex-row items-center md:items-start space-y-4 md:space-y-0 md:space-x-6'>
             <div className='relative'>
-              <img
-                src={user.avatar}
-                alt={user.name}
-                className='w-20 h-20 md:w-24 md:h-24 rounded-full object-cover border-4 border-white/30'
-              />
+              {user.avatar ? (
+                <img
+                  src={user.avatar}
+                  alt={user.name}
+                  className='w-20 h-20 md:w-24 md:h-24 rounded-full object-cover border-4 border-white/30'
+                />
+              ) : (
+                <div className='w-20 h-20 md:w-24 md:h-24 rounded-full bg-white/20 border-4 border-white/30 flex items-center justify-center'>
+                  <span className='text-2xl md:text-3xl font-bold'>
+                    {user.name.charAt(0).toUpperCase()}
+                  </span>
+                </div>
+              )}
               <button className='absolute -bottom-1 -right-1 p-1 bg-white rounded-full text-gray-600 hover:bg-gray-100 transition-colors'>
                 <PencilIcon className='h-4 w-4' />
               </button>
