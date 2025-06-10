@@ -1,14 +1,13 @@
 import { useState } from 'react';
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useLogin, useRegister } from '../hooks/useAuth';
 import { LoadingSpinner } from './LoadingSpinner';
 import type { LoginRequest, RegisterRequest } from '../services/auth';
 
-interface LoginPageProps {
-  onLoginSuccess: () => void;
-}
-
-export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
+export const LoginPage: React.FC = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
@@ -75,7 +74,9 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
         await registerMutation.mutateAsync(registerData);
       }
 
-      onLoginSuccess();
+      // Navigate to the intended destination or dashboard
+      const from = location.state?.from?.pathname || '/dashboard';
+      navigate(from, { replace: true });
     } catch (error) {
       console.error('Authentication error:', error);
     }
