@@ -14,6 +14,14 @@ interface JobCardProps {
 }
 
 export const JobCard: React.FC<JobCardProps> = ({ job, onLike, onDislike }) => {
+  // Transform API job data to match component expectations
+  const company = job.employer?.name || job.company || 'Unknown Company';
+  const location = job.employer?.address || job.location || 'Remote';
+  const rate = job.hourlySalaryRange || job.rate || 'Competitive';
+  const imageUrl =
+    job.image ||
+    `https://via.placeholder.com/400x300?text=${encodeURIComponent(company)}`;
+
   return (
     <div className='relative p-4 bg-gradient-to-br from-white to-gray-50 rounded-3xl border-2 border-gray-200 shadow-2xl w-full max-w-5xl h-full max-h-full mx-auto overflow-hidden'>
       {/* Decorative background elements */}
@@ -30,7 +38,7 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onLike, onDislike }) => {
                   {job.title}
                 </h2>
                 <h3 className='text-lg sm:text-xl lg:text-2xl font-semibold text-indigo-600 mb-3 line-clamp-1'>
-                  {job.company}
+                  {company}
                 </h3>
               </div>
 
@@ -38,13 +46,13 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onLike, onDislike }) => {
                 <div className='flex items-center text-gray-600 bg-gray-50 px-3 py-2 rounded-full'>
                   <MapPinIcon className='h-4 w-4 mr-2 flex-shrink-0' />
                   <span className='text-sm font-medium whitespace-nowrap'>
-                    {job.location}
+                    {location}
                   </span>
                 </div>
                 <div className='flex items-center text-green-600 font-semibold bg-green-50 px-3 py-2 rounded-full'>
                   <CurrencyDollarIcon className='h-4 w-4 mr-2 flex-shrink-0' />
                   <span className='text-sm font-medium whitespace-nowrap'>
-                    {job.rate}
+                    {rate}
                   </span>
                 </div>
               </div>
@@ -78,7 +86,7 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onLike, onDislike }) => {
           {/* Image Section */}
           <div className='relative w-full lg:w-80 h-48 sm:h-52 lg:h-full flex-shrink-0 order-1 lg:order-2'>
             <img
-              src={job.image}
+              src={imageUrl}
               alt={job.title}
               className='w-full h-full object-cover'
             />

@@ -1,0 +1,138 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String      @id @default(cuid())
+  email        String      @unique
+  password     String
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  
+  // Relations
+  applicant    Applicant?  @relation(fields: [applicantId], references: [id])
+  applicantId  String?     @unique
+  employer     Employer?   @relation(fields: [employerId], references: [id])
+  employerId   String?     @unique
+
+  @@map("users")
+}
+
+model Employer {
+  id          String   @id @default(cuid())
+  name        String
+  address     String
+  websiteUrl  String?  @map("website_url")
+  category    String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  user        User?
+  jobPostings JobPosting[]
+
+  @@map("employers")
+}
+
+model Applicant {
+  id           String   @id @default(cuid())
+  firstName    String   @map("first_name")
+  lastName     String   @map("last_name")
+  phoneNumber  String?  @map("phone_number")
+  introduction String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  // Relations
+  user         User?
+  docs         Doc[]
+  discardedJobs DiscardedJob[]
+  likedJobs    LikedJob[]
+
+  @@map("applicants")
+}
+
+model Doc {
+  id          String   @id @default(cuid())
+  filename    String
+  fileUrl     String   @map("file_url")
+  fileType    String   @map("file_type") // e.g., 'cv', 'cover_letter', 'certificate'
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  applicant   Applicant @relation(fields: [applicantId], references: [id], onDelete: Cascade)
+  applicantId String    @map("applicant_id")
+
+  @@map("docs")
+}
+
+model JobCategory {
+  id          String   @id @default(cuid())
+  category    String   @unique
+  name        String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  jobPostings JobPosting[]
+
+  @@map("job_categories")
+}
+
+model JobPosting {
+  id                  String   @id @default(cuid())
+  title               String
+  description         String
+  hourlySalaryRange   String   @map("hourly_salary_range")
+  expiryDate          DateTime @map("expiry_date")
+  jobName             String   @map("job_name")
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  
+  // Relations
+  employer            Employer     @relation(fields: [employerId], references: [id], onDelete: Cascade)
+  employerId          String       @map("employer_id")
+  jobCategory         JobCategory  @relation(fields: [jobCategoryId], references: [id])
+  jobCategoryId       String       @map("job_category_id")
+  discardedJobs       DiscardedJob[]
+  likedJobs           LikedJob[]
+
+  @@map("job_postings")
+}
+
+model DiscardedJob {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  
+  // Relations
+  jobPosting  JobPosting @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  jobId       String     @map("job_id")
+  applicant   Applicant  @relation(fields: [applicantId], references: [id], onDelete: Cascade)
+  applicantId String     @map("applicant_id")
+
+  @@unique([jobId, applicantId])
+  @@map("discarded_jobs")
+}
+
+model LikedJob {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  
+  // Relations
+  jobPosting  JobPosting @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  jobId       String     @map("job_id")
+  applicant   Applicant  @relation(fields: [applicantId], references: [id], onDelete: Cascade)
+  applicantId String     @map("applicant_id")
+
+  @@unique([jobId, applicantId])
+  @@map("liked_jobs")
+} 
