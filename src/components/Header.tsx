@@ -14,6 +14,7 @@ interface HeaderProps {
   onProfileClick: () => void;
   onSettingsClick: () => void;
   onLikedJobsClick: () => void;
+  onJobPreferencesClick: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -22,6 +23,7 @@ export const Header: React.FC<HeaderProps> = ({
   onProfileClick,
   onSettingsClick,
   onLikedJobsClick,
+  onJobPreferencesClick,
 }) => {
   return (
     <header className='bg-white/95 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-50'>
@@ -46,10 +48,20 @@ export const Header: React.FC<HeaderProps> = ({
 
           {/* Right side - User actions */}
           <div className='flex items-center space-x-2 md:space-x-3'>
+            {/* Job Preferences */}
+            <button
+              onClick={onJobPreferencesClick}
+              className='px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors text-sm font-medium text-gray-700 hover:text-gray-900'
+              title='Job Preferences'
+            >
+              Job Preferences
+            </button>
+
             {/* Liked jobs indicator */}
             <button
               onClick={onLikedJobsClick}
               className='relative hover:bg-gray-100 rounded-lg transition-colors p-1'
+              title='Liked Jobs'
             >
               <div className='flex items-center space-x-1 bg-green-50 px-2 py-1 rounded-full md:px-3 md:py-2'>
                 <HeartIcon className='h-4 w-4 text-green-500' />

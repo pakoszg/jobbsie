@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { JobCard } from './components/JobCard';
 import { Header } from './components/Header';
 import { UserProfile } from './components/UserProfile';
@@ -47,8 +47,7 @@ function App() {
     setShowProfile(true);
   };
 
-  const handleEditProfile = () => {
-    setShowProfile(false);
+  const handleJobPreferencesClick = () => {
     setShowEditProfile(true);
   };
 
@@ -80,6 +79,7 @@ function App() {
           onProfileClick={handleProfileClick}
           onSettingsClick={handleSettingsClick}
           onLikedJobsClick={handleLikedJobsClick}
+          onJobPreferencesClick={handleJobPreferencesClick}
         />
       </div>
 
@@ -153,9 +153,6 @@ function App() {
         user={user}
         isOpen={showProfile}
         onClose={() => setShowProfile(false)}
-        onEditProfile={handleEditProfile}
-        likedCount={likedJobs.length}
-        dislikedCount={dislikedJobs.length}
       />
 
       {/* Edit Profile Modal */}
