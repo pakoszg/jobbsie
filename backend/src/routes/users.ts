@@ -34,52 +34,73 @@ router.get('/', async (req: Request, res: Response) => {
   }
 });
 
-// @route   POST /api/users/user
-// @desc    Create a new user
+// @route   POST /api/users/createApplicant
+// @desc    Create a new applicant
 // @access  Public
-router.post('/create', async (req: Request, res: Response) => {
-  let entity: Applicant | Employer | null = null;
-
-  const { email, password, userType } = req.body;
+router.post('/createApplicant', async (req: Request, res: Response) => {
+  const { email, password, firstName, lastName, phoneNumber, introduction } =
+    req.body;
 
   try {
-    if (userType === 'applicant') {
-      entity = await prisma.applicant.create({
-        data: {
-          firstName: req.body.firstName,
-          lastName: req.body.lastName,
-          phoneNumber: req.body?.phoneNumber,
-          introduction: req.body?.introduction,
-        },
-      });
-    } else {
-      entity = await prisma.employer.create({
-        data: {
-          name: req.body.name,
-          address: req.body.address,
-          category: req.body.category,
-          websiteUrl: req.body.websiteUrl,
-        },
-      });
-    }
+    const applicant = await prisma.applicant.create({
+      data: {
+        firstName,
+        lastName,
+        phoneNumber,
+        introduction,
+      },
+    });
 
     const user = await prisma.user.create({
       data: {
         email,
         password,
-        [`${userType}Id`]: entity?.id,
+        applicantId: applicant?.id,
       },
     });
 
     return res.json({
+      message: 'Applicant created successfully',
       id: user.id,
       email: user.email,
-      userType,
       createdAt: user.createdAt,
     });
   } catch (error) {
     console.error('Create user error:', error);
-    return res.status(500).json({ message: 'Server error' });
+    return res.status(500).json({ message: 'Create applicant error' });
+  }
+});
+
+router.post('/createEmployer', async (req: Request, res: Response) => {
+  const { email, password, name, address, category, websiteUrl } = req.body;
+
+  try {
+    const employer = await prisma.employer.create({
+      data: {
+        name,
+        address,
+        category,
+        websiteUrl,
+      },
+    });
+
+    const user = await prisma.user.create({
+      data: {
+        email,
+        password,
+        employerId: employer?.id,
+      },
+    });
+
+    return res.json({
+      message: 'Employer created successfully',
+      id: user.id,
+      email: user.email,
+      createdAt: user.createdAt,
+    });
+  } catch (error) {
+    console.error('Create user error:', error);
+    return res.status(500).json({ message: 'Create employer error' });
   }
 });
 
