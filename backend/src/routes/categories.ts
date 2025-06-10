@@ -13,7 +13,7 @@ router.get('/', async (req: Request, res: Response) => {
       include: {
         _count: {
           select: {
-            jobPostings: true,
+            job_postings: true,
           },
         },
       },
@@ -35,7 +35,7 @@ router.get('/:id', async (req: Request, res: Response): Promise<void> => {
     const category = await prisma.jobCategory.findUnique({
       where: { id: req.params.id },
       include: {
-        jobPostings: {
+        job_postings: {
           include: {
             employer: {
               select: {
@@ -45,7 +45,7 @@ router.get('/:id', async (req: Request, res: Response): Promise<void> => {
               },
             },
           },
-          orderBy: { createdAt: 'desc' },
+          orderBy: { created_at: 'desc' },
         },
       },
     });
@@ -149,7 +149,7 @@ router.delete('/:id', async (req: Request, res: Response): Promise<void> => {
       include: {
         _count: {
           select: {
-            jobPostings: true,
+            job_postings: true,
           },
         },
       },
@@ -160,7 +160,7 @@ router.delete('/:id', async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    if (category._count.jobPostings > 0) {
+    if (category._count.job_postings > 0) {
       res.status(400).json({
         message: 'Cannot delete category with associated job postings',
       });

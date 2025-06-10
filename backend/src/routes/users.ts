@@ -1,5 +1,8 @@
 import express, { Request, Response } from 'express';
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 import { body, validationResult } from 'express-validator';
+
 import { prisma } from '../config/database';
 import { authenticateToken } from '../middleware/auth';
 import { Applicant, Employer } from '../../../node_modules/.prisma/client';
@@ -15,7 +18,7 @@ router.get('/', async (req: Request, res: Response) => {
       select: {
         id: true,
         email: true,
-        createdAt: true,
+        created_at: true,
         applicant: true,
         employer: true,
       },
@@ -38,32 +41,59 @@ router.get('/', async (req: Request, res: Response) => {
 // @desc    Create a new applicant
 // @access  Public
 router.post('/createApplicant', async (req: Request, res: Response) => {
-  const { email, password, firstName, lastName, phoneNumber, introduction } =
+  const { email, password, first_name, last_name, phone_number, introduction } =
     req.body;
 
   try {
     const applicant = await prisma.applicant.create({
       data: {
-        firstName,
-        lastName,
-        phoneNumber,
+        first_name,
+        last_name,
+        phone_number,
         introduction,
       },
     });
 
+    // Check if user exists
+    const existingUser = await prisma.user.findUnique({ where: { email } });
+    if (existingUser) {
+      res.status(400).json({ message: 'User already exists' });
+      return;
+    }
+
+    // Hash password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
     const user = await prisma.user.create({
       data: {
         email,
-        password,
-        applicantId: applicant?.id,
+        password: hashedPassword,
+        applicant_id: applicant?.id,
       },
     });
+
+    // Generate JWT token
+    const payload = {
+      user: {
+        id: user.id,
+        userType: 'applicant',
+      },
+    };
+
+    const token = jwt.sign(
+      payload,
+      process.env.JWT_SECRET as string,
+      {
+        expiresIn: process.env.JWT_EXPIRES_IN || '7d',
+      } as jwt.SignOptions
+    );
 
     return res.json({
       message: 'Applicant created successfully',
       id: user.id,
       email: user.email,
-      createdAt: user.createdAt,
+      created_at: user.created_at,
     });
   } catch (error) {
     console.error('Create user error:', error);
@@ -72,31 +102,64 @@ router.post('/createApplicant', async (req: Request, res: Response) => {
 });
 
 router.post('/createEmployer', async (req: Request, res: Response) => {
-  const { email, password, name, address, category, websiteUrl } = req.body;
+  const {
+    email,
+    password,
+    name,
+    country,
+    city,
+    address,
+    postal_code,
+    category,
+    website_url,
+  } = req.body;
 
   try {
     const employer = await prisma.employer.create({
       data: {
         name,
+        country,
+        city,
         address,
+        postal_code,
         category,
-        websiteUrl,
+        website_url,
       },
     });
+
+    // Hash password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
 
     const user = await prisma.user.create({
       data: {
         email,
-        password,
-        employerId: employer?.id,
+        password: hashedPassword,
+        employer_id: employer?.id,
       },
     });
+
+    // Generate JWT token
+    const payload = {
+      user: {
+        id: user.id,
+        userType: 'employer',
+      },
+    };
+
+    const token = jwt.sign(
+      payload,
+      process.env.JWT_SECRET as string,
+      {
+        expiresIn: process.env.JWT_EXPIRES_IN || '7d',
+      } as jwt.SignOptions
+    );
 
     return res.json({
       message: 'Employer created successfully',
       id: user.id,
       email: user.email,
-      createdAt: user.createdAt,
+      created_at: user.created_at,
     });
   } catch (error) {
     console.error('Create user error:', error);
@@ -174,9 +237,9 @@ router.put(
         await prisma.applicant.update({
           where: { id: existingUser.applicant.id },
           data: {
-            ...(firstName && { firstName }),
-            ...(lastName && { lastName }),
-            ...(phoneNumber && { phoneNumber }),
+            ...(firstName && { first_name: firstName }),
+            ...(lastName && { last_name: lastName }),
+            ...(phoneNumber && { phone_number: phoneNumber }),
             ...(introduction && { introduction }),
           },
         });
@@ -187,7 +250,7 @@ router.put(
             ...(name && { name }),
             ...(address && { address }),
             ...(category && { category }),
-            ...(websiteUrl && { websiteUrl }),
+            ...(websiteUrl && { website_url: websiteUrl }),
           },
         });
       }
@@ -231,11 +294,11 @@ router.get('/', async (req: Request, res: Response) => {
       select: {
         id: true,
         email: true,
-        createdAt: true,
+        created_at: true,
         applicant: true,
         employer: true,
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { created_at: 'desc' },
     });
 
     const formattedUsers = users.map((user) => ({
@@ -243,7 +306,7 @@ router.get('/', async (req: Request, res: Response) => {
       email: user.email,
       userType: user.applicant ? 'applicant' : 'employer',
       profile: user.applicant || user.employer,
-      createdAt: user.createdAt,
+      created_at: user.created_at,
     }));
 
     return res.json(formattedUsers);
@@ -260,10 +323,10 @@ router.get(
   '/applicants/:id/liked-jobs',
   async (req: Request, res: Response) => {
     try {
-      const likedJobs = await prisma.likedJob.findMany({
-        where: { applicantId: req.params.id },
+      const liked_jobs = await prisma.likedJob.findMany({
+        where: { applicant_id: req.params.id },
         include: {
-          jobPosting: {
+          job_posting: {
             include: {
               employer: {
                 select: {
@@ -272,14 +335,14 @@ router.get(
                   category: true,
                 },
               },
-              jobCategory: true,
+              job_category: true,
             },
           },
         },
-        orderBy: { createdAt: 'desc' },
+        orderBy: { created_at: 'desc' },
       });
 
-      return res.json(likedJobs.map((like) => like.jobPosting));
+      return res.json(liked_jobs.map((like) => like.job_posting));
     } catch (error) {
       console.error('Get liked jobs error:', error);
       return res.status(500).json({ message: 'Server error' });
@@ -293,8 +356,8 @@ router.get(
 router.get('/applicants/:id/docs', async (req: Request, res: Response) => {
   try {
     const docs = await prisma.doc.findMany({
-      where: { applicantId: req.params.id },
-      orderBy: { createdAt: 'desc' },
+      where: { applicant_id: req.params.id },
+      orderBy: { created_at: 'desc' },
     });
 
     return res.json(docs);

@@ -30,13 +30,13 @@ router.get('/', async (req: Request, res: Response) => {
 
     // Filter out expired jobs by default
     if (expired === 'false' || !expired) {
-      where.expiryDate = {
+      where.expiry_date = {
         gte: new Date(),
       };
     }
 
     if (category) {
-      where.jobCategory = {
+      where.job_category = {
         category: category as string,
       };
     }
@@ -54,7 +54,7 @@ router.get('/', async (req: Request, res: Response) => {
       where.OR = [
         { title: { contains: search as string, mode: 'insensitive' } },
         { description: { contains: search as string, mode: 'insensitive' } },
-        { jobName: { contains: search as string, mode: 'insensitive' } },
+        { job_name: { contains: search as string, mode: 'insensitive' } },
       ];
     }
 
@@ -68,15 +68,15 @@ router.get('/', async (req: Request, res: Response) => {
             category: true,
           },
         },
-        jobCategory: true,
+        job_category: true,
         _count: {
           select: {
-            likedJobs: true,
-            discardedJobs: true,
+            liked_jobs: true,
+            discarded_jobs: true,
           },
         },
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { created_at: 'desc' },
       take: Number(limit),
       skip: (Number(page) - 1) * Number(limit),
     });
@@ -109,14 +109,14 @@ router.get('/:id', async (req: Request, res: Response): Promise<void> => {
             name: true,
             category: true,
             address: true,
-            websiteUrl: true,
+            website_url: true,
           },
         },
-        jobCategory: true,
+        job_category: true,
         _count: {
           select: {
-            likedJobs: true,
-            discardedJobs: true,
+            liked_jobs: true,
+            discarded_jobs: true,
           },
         },
       },
@@ -174,14 +174,14 @@ router.post(
         return;
       }
 
-      const employerId = req.user.profile.id;
+      const employer_id = req.user.profile.id;
 
       // Verify job category exists
-      const jobCategory = await prisma.jobCategory.findUnique({
+      const job_category = await prisma.jobCategory.findUnique({
         where: { id: jobCategoryId },
       });
 
-      if (!jobCategory) {
+      if (!job_category) {
         res.status(404).json({ message: 'Job category not found' });
         return;
       }
@@ -190,11 +190,11 @@ router.post(
         data: {
           title,
           description,
-          jobName,
-          hourlySalaryRange,
-          expiryDate: new Date(expiryDate),
-          employerId,
-          jobCategoryId,
+          job_name: jobName,
+          hourly_salary_range: hourlySalaryRange,
+          expiry_date: new Date(expiryDate),
+          employer_id,
+          job_category_id: jobCategoryId,
         },
         include: {
           employer: {
@@ -204,7 +204,7 @@ router.post(
               category: true,
             },
           },
-          jobCategory: true,
+          job_category: true,
         },
       });
 
@@ -238,10 +238,10 @@ router.put('/:id', async (req: Request, res: Response): Promise<void> => {
       data: {
         ...(title && { title }),
         ...(description && { description }),
-        ...(jobName && { jobName }),
-        ...(hourlySalaryRange && { hourlySalaryRange }),
-        ...(expiryDate && { expiryDate: new Date(expiryDate) }),
-        ...(jobCategoryId && { jobCategoryId }),
+        ...(jobName && { job_name: jobName }),
+        ...(hourlySalaryRange && { hourly_salary_range: hourlySalaryRange }),
+        ...(expiryDate && { expiry_date: new Date(expiryDate) }),
+        ...(jobCategoryId && { job_category_id: jobCategoryId }),
       },
       include: {
         employer: {
@@ -251,7 +251,7 @@ router.put('/:id', async (req: Request, res: Response): Promise<void> => {
             category: true,
           },
         },
-        jobCategory: true,
+        job_category: true,
       },
     });
 
@@ -311,15 +311,15 @@ router.post('/:id/like', async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    const jobId = req.params.id;
-    if (!jobId) {
+    const job_id = req.params.id;
+    if (!job_id) {
       res.status(400).json({ message: 'Job ID is required' });
       return;
     }
 
     // Check if job exists
     const job = await prisma.jobPosting.findUnique({
-      where: { id: jobId },
+      where: { id: job_id },
     });
 
     if (!job) {
@@ -330,9 +330,9 @@ router.post('/:id/like', async (req: Request, res: Response): Promise<void> => {
     // Check if already liked
     const existingLike = await prisma.likedJob.findUnique({
       where: {
-        jobId_applicantId: {
-          jobId,
-          applicantId,
+        job_id_applicant_id: {
+          job_id,
+          applicant_id: applicantId,
         },
       },
     });
@@ -345,16 +345,16 @@ router.post('/:id/like', async (req: Request, res: Response): Promise<void> => {
     // Remove from discarded if exists
     await prisma.discardedJob.deleteMany({
       where: {
-        jobId,
-        applicantId,
+        job_id,
+        applicant_id: applicantId,
       },
     });
 
     // Add to liked
     await prisma.likedJob.create({
       data: {
-        jobId,
-        applicantId,
+        job_id,
+        applicant_id: applicantId,
       },
     });
 
@@ -379,15 +379,15 @@ router.post(
         return;
       }
 
-      const jobId = req.params.id;
-      if (!jobId) {
+      const job_id = req.params.id;
+      if (!job_id) {
         res.status(400).json({ message: 'Job ID is required' });
         return;
       }
 
       // Check if job exists
       const job = await prisma.jobPosting.findUnique({
-        where: { id: jobId },
+        where: { id: job_id },
       });
 
       if (!job) {
@@ -398,9 +398,9 @@ router.post(
       // Check if already discarded
       const existingDiscard = await prisma.discardedJob.findUnique({
         where: {
-          jobId_applicantId: {
-            jobId,
-            applicantId,
+          job_id_applicant_id: {
+            job_id,
+            applicant_id: applicantId,
           },
         },
       });
@@ -413,16 +413,16 @@ router.post(
       // Remove from liked if exists
       await prisma.likedJob.deleteMany({
         where: {
-          jobId,
-          applicantId,
+          job_id,
+          applicant_id: applicantId,
         },
       });
 
       // Add to discarded
       await prisma.discardedJob.create({
         data: {
-          jobId,
-          applicantId,
+          job_id,
+          applicant_id: applicantId,
         },
       });
 
