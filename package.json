@@ -20,7 +20,7 @@
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^20.19.0",
-    "prisma": "^5.7.0",
+    "prisma": "^6.2.1",
     "ts-node": "^10.9.1",
     "typescript": "^5.2.2"
   },

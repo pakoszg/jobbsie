@@ -2,16 +2,16 @@ import express, { Request, Response } from 'express';
 import { body, validationResult } from 'express-validator';
 import { prisma } from '../config/database';
 import { authenticateToken } from '../middleware/auth';
+import { Applicant, Employer } from '../../../node_modules/.prisma/client';
 
 const router = express.Router();
 
 // @route   GET /api/users/profile/:id
 // @desc    Get user profile
 // @access  Public
-router.get('/profile/:id', async (req: Request, res: Response) => {
+router.get('/', async (req: Request, res: Response) => {
   try {
-    const user = await prisma.user.findUnique({
-      where: { id: req.params.id },
+    const users = await prisma.user.findMany({
       select: {
         id: true,
         email: true,
@@ -21,22 +21,64 @@ router.get('/profile/:id', async (req: Request, res: Response) => {
       },
     });
 
-    if (!user) {
+    if (!users) {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    const userType = user.applicant ? 'applicant' : 'employer';
-    const profile = user.applicant || user.employer;
+    return res.json({
+      ...users,
+    });
+  } catch (error) {
+    console.error('Get user profile error:', error);
+    return res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// @route   POST /api/users/user
+// @desc    Create a new user
+// @access  Public
+router.post('/create', async (req: Request, res: Response) => {
+  let entity: Applicant | Employer | null = null;
+
+  const { email, password, userType } = req.body;
+
+  try {
+    if (userType === 'applicant') {
+      entity = await prisma.applicant.create({
+        data: {
+          firstName: req.body.firstName,
+          lastName: req.body.lastName,
+          phoneNumber: req.body?.phoneNumber,
+          introduction: req.body?.introduction,
+        },
+      });
+    } else {
+      entity = await prisma.employer.create({
+        data: {
+          name: req.body.name,
+          address: req.body.address,
+          category: req.body.category,
+          websiteUrl: req.body.websiteUrl,
+        },
+      });
+    }
+
+    const user = await prisma.user.create({
+      data: {
+        email,
+        password,
+        [`${userType}Id`]: entity?.id,
+      },
+    });
 
     return res.json({
       id: user.id,
       email: user.email,
       userType,
-      profile,
       createdAt: user.createdAt,
     });
   } catch (error) {
-    console.error('Get user profile error:', error);
+    console.error('Create user error:', error);
     return res.status(500).json({ message: 'Server error' });
   }
 });

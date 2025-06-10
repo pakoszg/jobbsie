@@ -11,7 +11,7 @@ datasource db {
 }
 
 model User {
-  id           String      @id @default(cuid())
+  id           String      @id @default(uuid())
   email        String      @unique
   password     String
   createdAt    DateTime    @default(now())
@@ -27,7 +27,7 @@ model User {
 }
 
 model Employer {
-  id          String   @id @default(cuid())
+  id          String   @id @default(uuid())
   name        String
   address     String
   websiteUrl  String?  @map("website_url")
@@ -43,7 +43,7 @@ model Employer {
 }
 
 model Applicant {
-  id           String   @id @default(cuid())
+  id           String   @id @default(uuid())
   firstName    String   @map("first_name")
   lastName     String   @map("last_name")
   phoneNumber  String?  @map("phone_number")
@@ -61,7 +61,7 @@ model Applicant {
 }
 
 model Doc {
-  id          String   @id @default(cuid())
+  id          String   @id @default(uuid())
   filename    String
   fileUrl     String   @map("file_url")
   fileType    String   @map("file_type") // e.g., 'cv', 'cover_letter', 'certificate'
@@ -76,7 +76,7 @@ model Doc {
 }
 
 model JobCategory {
-  id          String   @id @default(cuid())
+  id          String   @id @default(uuid())
   category    String   @unique
   name        String
   createdAt   DateTime @default(now())
@@ -89,7 +89,7 @@ model JobCategory {
 }
 
 model JobPosting {
-  id                  String   @id @default(cuid())
+  id                  String   @id @default(uuid())
   title               String
   description         String
   hourlySalaryRange   String   @map("hourly_salary_range")
@@ -110,7 +110,7 @@ model JobPosting {
 }
 
 model DiscardedJob {
-  id          String   @id @default(cuid())
+  id          String   @id @default(uuid())
   createdAt   DateTime @default(now())
   
   // Relations
@@ -124,7 +124,7 @@ model DiscardedJob {
 }
 
 model LikedJob {
-  id          String   @id @default(cuid())
+  id          String   @id @default(uuid())
   createdAt   DateTime @default(now())
   
   // Relations
