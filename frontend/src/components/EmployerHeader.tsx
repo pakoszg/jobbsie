@@ -5,7 +5,7 @@ import {
   PlusIcon,
   UserCircleIcon,
 } from '@heroicons/react/24/outline';
-import type { User } from '../types/user';
+import type { User } from '../types';
 
 interface EmployerHeaderProps {
   user: User;

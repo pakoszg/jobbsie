@@ -5,7 +5,7 @@ import {
   HeartIcon,
   UserCircleIcon,
 } from '@heroicons/react/24/outline';
-import type { User } from '../types/user';
+import type { User } from '../types';
 
 interface HeaderProps {
   user: User;
@@ -82,17 +82,9 @@ export const Header: React.FC<HeaderProps> = ({
               onClick={onProfileClick}
               className='flex items-center space-x-2 p-1 rounded-lg hover:bg-gray-100 transition-colors'
             >
-              {user.avatar ? (
-                <img
-                  src={user.avatar}
-                  alt={user.name}
-                  className='w-8 h-8 rounded-full object-cover border-2 border-gray-200'
-                />
-              ) : (
-                <UserCircleIcon className='h-8 w-8 text-gray-400' />
-              )}
+              <UserCircleIcon className='h-8 w-8 text-gray-400' />
               <span className='hidden md:block text-sm font-medium text-gray-700'>
-                {user.name.split(' ')[0]}
+                {user.email}
               </span>
             </button>
           </div>

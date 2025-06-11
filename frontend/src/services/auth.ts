@@ -1,5 +1,5 @@
 import { api } from '../lib/api';
-import type { ApiUser } from '../types/user';
+import type { ApiUser } from '../types';
 
 export interface LoginRequest {
   email: string;

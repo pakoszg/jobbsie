@@ -6,7 +6,7 @@ import {
   CalendarIcon,
   PencilIcon,
 } from '@heroicons/react/24/outline';
-import type { User } from '../types/user';
+import type { User } from '../types';
 
 interface UserProfileProps {
   user: User;
@@ -35,27 +35,19 @@ export const UserProfile: React.FC<UserProfileProps> = ({
 
           <div className='flex flex-col md:flex-row items-center md:items-start space-y-4 md:space-y-0 md:space-x-6'>
             <div className='relative'>
-              {user.avatar ? (
-                <img
-                  src={user.avatar}
-                  alt={user.name}
-                  className='w-20 h-20 md:w-24 md:h-24 rounded-full object-cover border-4 border-white/30'
-                />
-              ) : (
-                <div className='w-20 h-20 md:w-24 md:h-24 rounded-full bg-white/20 border-4 border-white/30 flex items-center justify-center'>
-                  <span className='text-2xl md:text-3xl font-bold'>
-                    {user.name.charAt(0).toUpperCase()}
-                  </span>
-                </div>
-              )}
+              <div className='w-20 h-20 md:w-24 md:h-24 rounded-full bg-white/20 border-4 border-white/30 flex items-center justify-center'>
+                <span className='text-2xl md:text-3xl font-bold'>
+                  {user.email.charAt(0).toUpperCase()}
+                </span>
+              </div>
               <button className='absolute -bottom-1 -right-1 p-1 bg-white rounded-full text-gray-600 hover:bg-gray-100 transition-colors'>
                 <PencilIcon className='h-4 w-4' />
               </button>
             </div>
             <div className='text-center md:text-left'>
-              <h2 className='text-2xl md:text-3xl font-bold'>{user.name}</h2>
+              <h2 className='text-2xl md:text-3xl font-bold'>{user.email}</h2>
               <p className='text-white/80 text-sm md:text-base'>Job Seeker</p>
-              <p className='text-white/70 text-sm mt-1'>{user.location}</p>
+              <p className='text-white/70 text-sm mt-1'>Unknown</p>
             </div>
           </div>
         </div>
@@ -74,11 +66,11 @@ export const UserProfile: React.FC<UserProfileProps> = ({
               </div>
               <div className='flex items-center space-x-3 text-gray-600'>
                 <MapPinIcon className='h-5 w-5 flex-shrink-0' />
-                <span>{user.location}</span>
+                <span>Unknown</span>
               </div>
               <div className='flex items-center space-x-3 text-gray-600'>
                 <CalendarIcon className='h-5 w-5 flex-shrink-0' />
-                <span>Member since {user.memberSince}</span>
+                <span>Member since {user.created_at.toLocaleDateString()}</span>
               </div>
             </div>
           </div>

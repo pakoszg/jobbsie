@@ -1,5 +1,5 @@
 import { api } from '../lib/api';
-import type { Job } from '../types/job';
+import type { Job } from '../types';
 
 export interface JobsResponse {
   jobs: Job[];

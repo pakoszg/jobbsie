@@ -4,7 +4,7 @@ import {
   ChevronLeftIcon,
   CheckIcon,
 } from '@heroicons/react/24/outline';
-import type { User } from '../types/user';
+import type { User } from '../types';
 
 interface EditProfileProps {
   user: User;
@@ -128,9 +128,9 @@ export const EditProfile: React.FC<EditProfileProps> = ({
   onClose,
   onSave,
 }) => {
-  const [selectedPreferences, setSelectedPreferences] = useState<string[]>(
-    user.jobPreferences || []
-  );
+  const [selectedPreferences, setSelectedPreferences] = useState<string[]>([
+    'Hotel Receptionist',
+  ]);
   const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
 
   if (!isOpen) return null;

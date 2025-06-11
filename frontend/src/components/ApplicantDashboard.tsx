@@ -1,24 +1,18 @@
 import { useState } from 'react';
-import { JobCard } from './JobCard';
 import { Header } from './Header';
 import { UserProfile } from './UserProfile';
 import { EditProfile } from './EditProfile';
-import { LikedJobs } from './LikedJobs';
 import { LoadingSpinner } from './LoadingSpinner';
 import { ErrorMessage } from './ErrorMessage';
 import { useJobs } from '../hooks/useJobs';
-import type { Job } from '../types/job';
-import type { ApiUser } from '../types/user';
+import type { Job, ApiUser } from '../types';
 
 interface ApplicantDashboardProps {
   currentUser: ApiUser;
   onLogout: () => void;
 }
 
-export function ApplicantDashboard({
-  currentUser,
-  onLogout,
-}: ApplicantDashboardProps) {
+export function ApplicantDashboard({ currentUser }: ApplicantDashboardProps) {
   const [currentView, setCurrentView] = useState<'swipe' | 'browse'>('swipe');
   const [currentJobIndex, setCurrentJobIndex] = useState(0);
   const [likedJobs, setLikedJobs] = useState<Job[]>([]);
@@ -39,28 +33,6 @@ export function ApplicantDashboard({
   } = useJobs(currentView === 'swipe' ? { expired: false, limit: 50 } : {});
   const jobs = jobsData?.jobs || [];
 
-  const handleLike = () => {
-    if (currentJobIndex < jobs.length) {
-      setLikedJobs([...likedJobs, jobs[currentJobIndex]]);
-      setShowFeedback('like');
-      setTimeout(() => {
-        setShowFeedback(null);
-        setCurrentJobIndex(currentJobIndex + 1);
-      }, 800);
-    }
-  };
-
-  const handleDislike = () => {
-    if (currentJobIndex < jobs.length) {
-      setDislikedJobs([...dislikedJobs, jobs[currentJobIndex]]);
-      setShowFeedback('dislike');
-      setTimeout(() => {
-        setShowFeedback(null);
-        setCurrentJobIndex(currentJobIndex + 1);
-      }, 800);
-    }
-  };
-
   const handleProfileClick = () => {
     setShowProfile(true);
   };
@@ -80,36 +52,12 @@ export function ApplicantDashboard({
 
   const currentJob = jobs[currentJobIndex];
 
-  // Create a user object compatible with the existing components
-  const user = {
-    id: parseInt(currentUser.id),
-    name:
-      currentUser.userType === 'applicant'
-        ? `${currentUser.applicant?.first_name || ''} ${
-            currentUser.applicant?.last_name || ''
-          }`.trim()
-        : currentUser.employer?.name || currentUser.email,
-    email: currentUser.email,
-    avatar: undefined, // No avatar field in current schema
-    location:
-      currentUser.userType === 'employer'
-        ? currentUser.employer?.address || 'Unknown'
-        : 'Unknown', // No location field in applicant schema
-    jobPreferences: [], // No job preferences in current schema
-    memberSince: new Date(
-      currentUser.created_at || Date.now()
-    ).toLocaleDateString('en-US', {
-      month: 'long',
-      year: 'numeric',
-    }),
-  };
-
   return (
     <div className='h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex flex-col overflow-hidden'>
       {/* Header - Fixed height */}
       <div className='flex-shrink-0'>
         <Header
-          user={user}
+          user={currentUser}
           likedCount={likedJobs.length}
           onProfileClick={handleProfileClick}
           onLikedJobsClick={handleLikedJobsClick}
@@ -122,7 +70,7 @@ export function ApplicantDashboard({
         {/* Welcome Message - Fixed height */}
         <div className='flex-shrink-0 text-center mb-3 sm:mb-4 md:mb-5 lg:mb-6'>
           <h2 className='text-lg sm:text-xl md:text-2xl lg:text-3xl font-semibold text-gray-800 mb-1'>
-            Welcome back, {user.name.split(' ')[0]}! 👋
+            Welcome back, {currentUser.email}! 👋
           </h2>
           <p className='text-gray-600 text-sm sm:text-base md:text-lg'>
             Find your perfect job match
@@ -154,14 +102,6 @@ export function ApplicantDashboard({
                   </div>
                 </div>
               )}
-
-              <div className='w-full h-full max-h-full overflow-hidden'>
-                <JobCard
-                  job={currentJob}
-                  onLike={handleLike}
-                  onDislike={handleDislike}
-                />
-              </div>
             </div>
           ) : (
             <div className='text-center py-6 sm:py-8 md:py-12 lg:py-16 px-4 sm:px-6'>
@@ -182,24 +122,17 @@ export function ApplicantDashboard({
 
       {/* User Profile Modal */}
       <UserProfile
-        user={user}
+        user={currentUser}
         isOpen={showProfile}
         onClose={() => setShowProfile(false)}
       />
 
       {/* Edit Profile Modal */}
       <EditProfile
-        user={user}
+        user={currentUser}
         isOpen={showEditProfile}
         onClose={() => setShowEditProfile(false)}
         onSave={handleSavePreferences}
-      />
-
-      {/* Liked Jobs Modal */}
-      <LikedJobs
-        likedJobs={likedJobs}
-        isOpen={showLikedJobs}
-        onClose={() => setShowLikedJobs(false)}
       />
     </div>
   );

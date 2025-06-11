@@ -11,7 +11,7 @@ import {
   EyeIcon,
 } from '@heroicons/react/24/outline';
 import { useCreateJob } from '../hooks/useJobs';
-import type { ApiUser } from '../types/user';
+import type { ApiUser } from '../types';
 import type { CreateJobRequest } from '../services/jobs';
 
 interface EmployerDashboardProps {
