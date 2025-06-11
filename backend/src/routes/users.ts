@@ -323,7 +323,7 @@ router.get(
   '/applicants/:id/liked-jobs',
   async (req: Request, res: Response) => {
     try {
-      const liked_jobs = await prisma.likedJob.findMany({
+      const liked_jobs = await prisma.applicantLikedJob.findMany({
         where: { applicant_id: req.params.id },
         include: {
           job_posting: {
