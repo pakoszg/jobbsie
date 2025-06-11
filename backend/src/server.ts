@@ -8,7 +8,6 @@ import rateLimit from 'express-rate-limit';
 import { connectDatabase } from './config/database';
 import { errorHandler } from './middleware/errorHandler';
 import authRoutes from './routes/auth';
-import jobRoutes from './routes/jobs';
 import userRoutes from './routes/users';
 import categoryRoutes from './routes/categories';
 
@@ -49,7 +48,6 @@ app.get('/health', (req, res) => {
 
 // API Routes
 app.use('/api/auth', authRoutes);
-app.use('/api/jobs', jobRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/categories', categoryRoutes);
 
