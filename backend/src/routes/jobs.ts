@@ -1,48 +1,9 @@
 import express, { Request, Response } from 'express';
-import { body, validationResult } from 'express-validator';
 import { prisma } from '../config/database';
 import { authenticateToken } from '../middleware/auth';
-import { z } from 'zod';
-
-// ZOD schema for creating a job posting (duplicated here to avoid path issues)
-const CreateJobSchema = z.object({
-  title: z
-    .string()
-    .min(1, 'Job title is required')
-    .max(100, 'Job title must be less than 100 characters'),
-
-  jobName: z
-    .string()
-    .min(1, 'Job name is required')
-    .max(50, 'Job name must be less than 50 characters'),
-
-  description: z
-    .string()
-    .min(50, 'Job description must be at least 50 characters')
-    .max(2000, 'Job description must be less than 2000 characters'),
-
-  hourlySalaryRange: z
-    .string()
-    .min(1, 'Hourly salary range is required')
-    .regex(/^\$\d+-\d+\/hour$/, 'Salary range must be in format: $XX-XX/hour'),
-
-  expiryDate: z
-    .string()
-    .min(1, 'Expiry date is required')
-    .refine((date: string) => {
-      const expiryDate = new Date(date);
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      return expiryDate > today;
-    }, 'Expiry date must be in the future'),
-
-  jobCategoryId: z
-    .string()
-    .min(1, 'Job category is required')
-    .uuid('Invalid job category ID'),
-});
-
-type CreateJobRequest = z.infer<typeof CreateJobSchema>;
+// Import local schema and types
+import { CreateJobSchema, CreateJobRequest } from '../schemas/job';
+import type { JobResponse, JobsListResponse } from '../types/job';
 
 const router = express.Router();
 
@@ -54,7 +15,7 @@ router.post(
   authenticateToken,
   async (req: Request, res: Response): Promise<void> => {
     try {
-      // Validate request body using ZOD
+      // Validate request body using shared ZOD schema
       const validationResult = CreateJobSchema.safeParse(req.body);
 
       if (!validationResult.success) {
@@ -68,7 +29,7 @@ router.post(
         return;
       }
 
-      const jobData = validationResult.data;
+      const jobData: CreateJobRequest = validationResult.data;
 
       // Check if user is authenticated and is an employer
       if (!req.user) {
@@ -129,14 +90,14 @@ router.post(
         },
       });
 
-      // Transform the response to match the frontend expectations
-      const jobResponse = {
+      // Transform the response to match the shared JobResponse type
+      const jobResponse: JobResponse = {
         id: newJob.id,
         title: newJob.title,
         jobName: newJob.job_name,
         description: newJob.description,
         hourlySalaryRange: newJob.hourly_salary_range,
-        expiryDate: newJob.expiry_date.toISOString().split('T')[0], // Format as YYYY-MM-DD
+        expiryDate: newJob.expiry_date.toISOString().split('T')[0]!, // Format as YYYY-MM-DD
         createdAt: newJob.created_at.toISOString(),
         updatedAt: newJob.updated_at.toISOString(),
         employer: newJob.employer,
@@ -225,14 +186,14 @@ router.get('/', async (req: Request, res: Response): Promise<void> => {
       prisma.jobPosting.count({ where }),
     ]);
 
-    // Transform jobs to match frontend expectations
-    const transformedJobs = jobs.map((job) => ({
+    // Transform jobs to match shared JobResponse type
+    const transformedJobs: JobResponse[] = jobs.map((job) => ({
       id: job.id,
       title: job.title,
       jobName: job.job_name,
       description: job.description,
       hourlySalaryRange: job.hourly_salary_range,
-      expiryDate: job.expiry_date.toISOString().split('T')[0],
+      expiryDate: job.expiry_date.toISOString().split('T')[0]!,
       createdAt: job.created_at.toISOString(),
       updatedAt: job.updated_at.toISOString(),
       employer: job.employer,
@@ -241,12 +202,14 @@ router.get('/', async (req: Request, res: Response): Promise<void> => {
 
     const totalPages = Math.ceil(total / limitNumber);
 
-    res.json({
+    const response: JobsListResponse = {
       jobs: transformedJobs,
       totalPages,
       currentPage: pageNumber,
       total,
-    });
+    };
+
+    res.json(response);
   } catch (error) {
     console.error('Get jobs error:', error);
     res.status(500).json({ message: 'Server error' });
@@ -287,14 +250,14 @@ router.get('/:id', async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    // Transform job to match frontend expectations
-    const jobResponse = {
+    // Transform job to match shared JobResponse type
+    const jobResponse: JobResponse = {
       id: job.id,
       title: job.title,
       jobName: job.job_name,
       description: job.description,
       hourlySalaryRange: job.hourly_salary_range,
-      expiryDate: job.expiry_date.toISOString().split('T')[0],
+      expiryDate: job.expiry_date.toISOString().split('T')[0]!,
       createdAt: job.created_at.toISOString(),
       updatedAt: job.updated_at.toISOString(),
       employer: job.employer,
