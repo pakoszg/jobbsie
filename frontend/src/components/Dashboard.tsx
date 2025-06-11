@@ -12,6 +12,8 @@ export function Dashboard() {
   const { data: currentUser, isLoading: userLoading } = useCurrentUser();
   const logoutMutation = useLogout();
 
+  console.log({ currentUser });
+
   const handleLogout = async () => {
     await logoutMutation.mutateAsync();
     navigate('/login');

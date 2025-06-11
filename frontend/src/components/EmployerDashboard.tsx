@@ -2,8 +2,7 @@ import { useState } from 'react';
 import { EmployerHeader } from './EmployerHeader';
 import { UserProfile } from './UserProfile';
 import { CreateJobForm } from './CreateJobForm';
-import { LoadingSpinner } from './LoadingSpinner';
-import { ErrorMessage } from './ErrorMessage';
+
 import {
   PlusIcon,
   PencilIcon,
@@ -91,22 +90,6 @@ export function EmployerDashboard({
     setShowCreateJob(false);
   };
 
-  // Create a user object compatible with the existing components
-  const user = {
-    id: parseInt(currentUser.id),
-    name: currentUser.employer?.name || currentUser.email,
-    email: currentUser.email,
-    avatar: undefined, // No avatar field in current schema
-    location: currentUser.employer?.address || 'Unknown',
-    jobPreferences: [], // Not applicable for employers
-    memberSince: new Date(
-      currentUser.created_at || Date.now()
-    ).toLocaleDateString('en-US', {
-      month: 'long',
-      year: 'numeric',
-    }),
-  };
-
   const filteredJobs = mockJobs.filter((job) => {
     if (activeTab === 'active') return job.status === 'active';
     if (activeTab === 'draft') return job.status === 'draft';
@@ -119,10 +102,11 @@ export function EmployerDashboard({
       {/* Header - Fixed height */}
       <div className='flex-shrink-0'>
         <EmployerHeader
-          user={user}
+          user={currentUser}
           onProfileClick={handleProfileClick}
           onCreateJobClick={handleCreateJobClick}
           onJobsClick={handleJobsClick}
+          onLogout={onLogout}
         />
       </div>
 
@@ -131,7 +115,7 @@ export function EmployerDashboard({
         {/* Welcome Message - Fixed height */}
         <div className='flex-shrink-0 text-center mb-3 sm:mb-4 md:mb-5 lg:mb-6'>
           <h2 className='text-lg sm:text-xl md:text-2xl lg:text-3xl font-semibold text-gray-800 mb-1'>
-            Welcome back, {user.name.split(' ')[0]}! 👋
+            Welcome back, {currentUser?.employer?.name}! 👋
           </h2>
           <p className='text-gray-600 text-sm sm:text-base md:text-lg'>
             Manage your job postings and find great candidates
@@ -295,7 +279,7 @@ export function EmployerDashboard({
 
       {/* User Profile Modal */}
       <UserProfile
-        user={user}
+        user={currentUser}
         isOpen={showProfile}
         onClose={() => setShowProfile(false)}
       />

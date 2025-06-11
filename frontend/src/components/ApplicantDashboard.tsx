@@ -12,7 +12,10 @@ interface ApplicantDashboardProps {
   onLogout: () => void;
 }
 
-export function ApplicantDashboard({ currentUser }: ApplicantDashboardProps) {
+export function ApplicantDashboard({
+  currentUser,
+  onLogout,
+}: ApplicantDashboardProps) {
   const [currentView, setCurrentView] = useState<'swipe' | 'browse'>('swipe');
   const [currentJobIndex, setCurrentJobIndex] = useState(0);
   const [likedJobs, setLikedJobs] = useState<Job[]>([]);
@@ -52,6 +55,20 @@ export function ApplicantDashboard({ currentUser }: ApplicantDashboardProps) {
 
   const currentJob = jobs[currentJobIndex];
 
+  // Get display name for welcome message
+  const getDisplayName = () => {
+    if (currentUser.userType === 'applicant' && currentUser.applicant) {
+      return `${currentUser.applicant.first_name} ${currentUser.applicant.last_name}`.trim();
+    }
+    if (currentUser.userType === 'employer' && currentUser.employer) {
+      return currentUser.employer.name;
+    }
+    return currentUser.email; // Fallback to email
+  };
+
+  const displayName = getDisplayName();
+  const firstName = displayName.split(' ')[0];
+
   return (
     <div className='h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex flex-col overflow-hidden'>
       {/* Header - Fixed height */}
@@ -62,6 +79,7 @@ export function ApplicantDashboard({ currentUser }: ApplicantDashboardProps) {
           onProfileClick={handleProfileClick}
           onLikedJobsClick={handleLikedJobsClick}
           onJobPreferencesClick={handleJobPreferencesClick}
+          onLogout={onLogout}
         />
       </div>
 
@@ -70,7 +88,7 @@ export function ApplicantDashboard({ currentUser }: ApplicantDashboardProps) {
         {/* Welcome Message - Fixed height */}
         <div className='flex-shrink-0 text-center mb-3 sm:mb-4 md:mb-5 lg:mb-6'>
           <h2 className='text-lg sm:text-xl md:text-2xl lg:text-3xl font-semibold text-gray-800 mb-1'>
-            Welcome back, {currentUser.email}! 👋
+            Welcome back, {firstName}! 👋
           </h2>
           <p className='text-gray-600 text-sm sm:text-base md:text-lg'>
             Find your perfect job match
