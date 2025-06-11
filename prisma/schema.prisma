@@ -18,10 +18,10 @@ model User {
   password   String
 
   // Relations
-  applicant    Applicant? @relation(fields: [applicant_id], references: [id])
-  applicant_id String?    @unique
-  employer     Employer?  @relation(fields: [employer_id], references: [id])
-  employer_id  String?    @unique
+  applicant       Applicant?    @relation(fields: [applicant_id], references: [id])
+  applicant_id    String?       @unique
+  employer        Employer?     @relation(fields: [employer_id], references: [id])
+  employer_id     String?       @unique
 
   @@map("users")
 }
@@ -55,6 +55,8 @@ model Applicant {
   last_name    String   @map("last_name")
   phone_number String?  @map("phone_number")
   introduction String?
+  job_preferences JobCategory[]
+
 
   // Relations
   user                       User?
@@ -91,6 +93,7 @@ model JobCategory {
 
   // Relations
   job_postings JobPosting[]
+  Applicant    Applicant[]
 
   @@map("job_categories")
 }
