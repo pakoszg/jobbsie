@@ -11,7 +11,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { useCreateJob } from '../hooks/useJobs';
 import type { ApiUser } from '../types';
-import type { CreateJobRequest } from '../services/jobs';
+import type { CreateJobRequest } from '../types/job';
 
 interface EmployerDashboardProps {
   currentUser: ApiUser;
@@ -84,10 +84,16 @@ export function EmployerDashboard({
   };
 
   const handleCreateJob = (jobData: CreateJobRequest) => {
-    // In real implementation, this would call the API
-    console.log('Creating job:', jobData);
-    // createJobMutation.mutate(jobData);
-    setShowCreateJob(false);
+    createJobMutation.mutate(jobData, {
+      onSuccess: () => {
+        setShowCreateJob(false);
+        // Optionally show a success toast/notification here
+      },
+      onError: (error) => {
+        console.error('Failed to create job:', error);
+        // Optionally show an error toast/notification here
+      },
+    });
   };
 
   const filteredJobs = mockJobs.filter((job) => {

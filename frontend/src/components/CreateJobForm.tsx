@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import { LoadingSpinner } from './LoadingSpinner';
-import type { CreateJobRequest } from '../services/jobs';
+import { CreateJobSchema, type CreateJobRequest } from '../types/job';
+import { useCategories } from '../hooks/useCategories';
 
 interface CreateJobFormProps {
   isOpen: boolean;
@@ -27,19 +28,9 @@ export const CreateJobForm: React.FC<CreateJobFormProps> = ({
 
   const [errors, setErrors] = useState<Partial<CreateJobRequest>>({});
 
-  // Mock job categories (in real implementation, fetch from API)
-  const jobCategories = [
-    { id: 'tech', name: 'Technology' },
-    { id: 'healthcare', name: 'Healthcare' },
-    { id: 'finance', name: 'Finance' },
-    { id: 'education', name: 'Education' },
-    { id: 'marketing', name: 'Marketing' },
-    { id: 'sales', name: 'Sales' },
-    { id: 'customer-service', name: 'Customer Service' },
-    { id: 'administration', name: 'Administration' },
-    { id: 'retail', name: 'Retail' },
-    { id: 'hospitality', name: 'Hospitality' },
-  ];
+  // Fetch job categories from API
+  const { data: jobCategories = [], isLoading: categoriesLoading } =
+    useCategories();
 
   const handleInputChange = (
     e: React.ChangeEvent<
@@ -62,44 +53,22 @@ export const CreateJobForm: React.FC<CreateJobFormProps> = ({
   };
 
   const validateForm = (): boolean => {
-    const newErrors: Partial<CreateJobRequest> = {};
+    const validation = CreateJobSchema.safeParse(formData);
 
-    if (!formData.title.trim()) {
-      newErrors.title = 'Job title is required';
+    if (!validation.success) {
+      const newErrors: Partial<CreateJobRequest> = {};
+
+      validation.error.issues.forEach((issue) => {
+        const field = issue.path[0] as keyof CreateJobRequest;
+        newErrors[field] = issue.message;
+      });
+
+      setErrors(newErrors);
+      return false;
     }
 
-    if (!formData.jobName.trim()) {
-      newErrors.jobName = 'Job name is required';
-    }
-
-    if (!formData.description.trim()) {
-      newErrors.description = 'Job description is required';
-    } else if (formData.description.length < 50) {
-      newErrors.description = 'Job description must be at least 50 characters';
-    }
-
-    if (!formData.hourlySalaryRange.trim()) {
-      newErrors.hourlySalaryRange = 'Salary range is required';
-    }
-
-    if (!formData.expiryDate) {
-      newErrors.expiryDate = 'Expiry date is required';
-    } else {
-      const expiryDate = new Date(formData.expiryDate);
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-
-      if (expiryDate <= today) {
-        newErrors.expiryDate = 'Expiry date must be in the future';
-      }
-    }
-
-    if (!formData.jobCategoryId) {
-      newErrors.jobCategoryId = 'Job category is required';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    setErrors({});
+    return true;
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -206,11 +175,16 @@ export const CreateJobForm: React.FC<CreateJobFormProps> = ({
               name='jobCategoryId'
               value={formData.jobCategoryId}
               onChange={handleInputChange}
+              disabled={categoriesLoading}
               className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                 errors.jobCategoryId ? 'border-red-500' : 'border-gray-300'
               }`}
             >
-              <option value=''>Select a category</option>
+              <option value=''>
+                {categoriesLoading
+                  ? 'Loading categories...'
+                  : 'Select a category'}
+              </option>
               {jobCategories.map((category) => (
                 <option key={category.id} value={category.id}>
                   {category.name}

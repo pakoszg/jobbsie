@@ -43,8 +43,6 @@ export const UserProfile: React.FC<UserProfileProps> = ({
       };
     }
 
-    console.log({ user });
-
     if (user.userType === 'employer' && user.employer) {
       return {
         name: user.employer.name,

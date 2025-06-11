@@ -1,12 +1,10 @@
 import { api } from '../lib/api';
 import type { Job } from '../types';
-
-export interface JobsResponse {
-  jobs: Job[];
-  totalPages: number;
-  currentPage: number;
-  total: number;
-}
+import type {
+  CreateJobRequest,
+  JobResponse,
+  JobsListResponse,
+} from '../types/job';
 
 export interface JobsFilters {
   page?: number;
@@ -19,21 +17,12 @@ export interface JobsFilters {
   expired?: boolean;
 }
 
-export interface CreateJobRequest {
-  title: string;
-  description: string;
-  jobName: string;
-  hourlySalaryRange: string;
-  expiryDate: string;
-  jobCategoryId: string;
-}
-
 export interface UpdateJobRequest extends Partial<CreateJobRequest> {}
 
 // Get all jobs with optional filtering
 export const getJobs = async (
   filters: JobsFilters = {}
-): Promise<JobsResponse> => {
+): Promise<JobsListResponse> => {
   const params = new URLSearchParams();
 
   Object.entries(filters).forEach(([key, value]) => {
@@ -47,7 +36,7 @@ export const getJobs = async (
 };
 
 // Get a single job by ID
-export const getJob = async (id: string): Promise<Job> => {
+export const getJob = async (id: string): Promise<JobResponse> => {
   const { data } = await api.get(`/jobs/${id}`);
   return data;
 };
@@ -55,7 +44,7 @@ export const getJob = async (id: string): Promise<Job> => {
 // Create a new job posting (requires authentication)
 export const createJob = async (
   jobData: CreateJobRequest
-): Promise<{ message: string; job: Job }> => {
+): Promise<{ message: string; job: JobResponse }> => {
   const { data } = await api.post('/jobs', jobData);
   return data;
 };
@@ -64,7 +53,7 @@ export const createJob = async (
 export const updateJob = async (
   id: string,
   jobData: UpdateJobRequest
-): Promise<Job> => {
+): Promise<JobResponse> => {
   const { data } = await api.put(`/jobs/${id}`, jobData);
   return data.job;
 };
