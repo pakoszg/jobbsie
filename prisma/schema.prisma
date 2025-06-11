@@ -11,66 +11,70 @@ datasource db {
 }
 
 model User {
-  id           String      @id @default(uuid())
-  created_at   DateTime    @default(now())
-  updated_at   DateTime    @updatedAt
-  email        String      @unique
-  password     String
-  
+  id         String   @id @default(uuid())
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  email      String   @unique
+  password   String
+
   // Relations
-  applicant    Applicant?  @relation(fields: [applicant_id], references: [id])
-  applicant_id String?     @unique
-  employer     Employer?   @relation(fields: [employer_id], references: [id])
-  employer_id  String?     @unique
+  applicant    Applicant? @relation(fields: [applicant_id], references: [id])
+  applicant_id String?    @unique
+  employer     Employer?  @relation(fields: [employer_id], references: [id])
+  employer_id  String?    @unique
 
   @@map("users")
 }
 
 model Employer {
-  id           String   @id @default(uuid())
-  created_at   DateTime @default(now())
-  updated_at   DateTime @updatedAt
-  name         String
-  country      String
-  city         String
-  address      String
-  postal_code  String
-  website_url  String?  @map("website_url")
-  category     String
-  
+  id          String   @id @default(uuid())
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+  name        String
+  country     String
+  city        String
+  address     String
+  postal_code String
+  website_url String?  @map("website_url")
+  category    String
+
   // Relations
-  user         User?
-  job_postings JobPosting[]
+  user                       User?
+  job_postings               JobPosting[]
+  EmployerLikedApplicant     EmployerLikedApplicant[]
+  EmployerDiscardedApplicant EmployerDiscardedApplicant[]
 
   @@map("employers")
 }
 
 model Applicant {
-  id             String   @id @default(uuid())
-  created_at     DateTime @default(now())
-  updated_at     DateTime @updatedAt
-  first_name     String   @map("first_name")
-  last_name      String   @map("last_name")
-  phone_number   String?  @map("phone_number")
-  introduction   String?
-  
+  id           String   @id @default(uuid())
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+  first_name   String   @map("first_name")
+  last_name    String   @map("last_name")
+  phone_number String?  @map("phone_number")
+  introduction String?
+
   // Relations
-  user           User?
-  docs           Doc[]
-  discarded_jobs DiscardedJob[]
-  liked_jobs     LikedJob[]
+  user                       User?
+  docs                       Doc[]
+  discarded_jobs             ApplicantDiscardedJob[]
+  liked_jobs                 ApplicantLikedJob[]
+  EmployerLikedApplicant     EmployerLikedApplicant[]
+  EmployerDiscardedApplicant EmployerDiscardedApplicant[]
 
   @@map("applicants")
 }
 
 model Doc {
-  id           String   @id @default(uuid())
-  created_at   DateTime @default(now())
-  updated_at   DateTime @updatedAt
-  filename     String
-  file_url     String   @map("file_url")
-  file_type    String   @map("file_type") // e.g., 'cv', 'cover_letter', 'certificate'
-  
+  id         String   @id @default(uuid())
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  filename   String
+  file_url   String   @map("file_url")
+  file_type  String   @map("file_type") // e.g., 'cv', 'cover_letter', 'certificate'
+
   // Relations
   applicant    Applicant @relation(fields: [applicant_id], references: [id], onDelete: Cascade)
   applicant_id String    @map("applicant_id")
@@ -79,12 +83,12 @@ model Doc {
 }
 
 model JobCategory {
-  id           String   @id @default(uuid())
-  created_at   DateTime @default(now())
-  updated_at   DateTime @updatedAt
-  category     String   @unique
-  name         String
-  
+  id         String   @id @default(uuid())
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  category   String   @unique
+  name       String
+
   // Relations
   job_postings JobPosting[]
 
@@ -92,30 +96,32 @@ model JobCategory {
 }
 
 model JobPosting {
-  id                    String   @id @default(uuid())
-  created_at            DateTime @default(now())
-  updated_at            DateTime @updatedAt
-  title                 String
-  description           String
-  hourly_salary_range   String   @map("hourly_salary_range")
-  expiry_date           DateTime @map("expiry_date")
-  job_name              String   @map("job_name")
-  
+  id                  String   @id @default(uuid())
+  created_at          DateTime @default(now())
+  updated_at          DateTime @updatedAt
+  title               String
+  description         String
+  hourly_salary_range String   @map("hourly_salary_range")
+  expiry_date         DateTime @map("expiry_date")
+  job_name            String   @map("job_name")
+
   // Relations
-  employer              Employer     @relation(fields: [employer_id], references: [id], onDelete: Cascade)
-  employer_id           String       @map("employer_id")
-  job_category          JobCategory  @relation(fields: [job_category_id], references: [id])
-  job_category_id       String       @map("job_category_id")
-  discarded_jobs        DiscardedJob[]
-  liked_jobs            LikedJob[]
+  employer                   Employer                     @relation(fields: [employer_id], references: [id], onDelete: Cascade)
+  employer_id                String                       @map("employer_id")
+  job_category               JobCategory                  @relation(fields: [job_category_id], references: [id])
+  job_category_id            String                       @map("job_category_id")
+  discarded_jobs             ApplicantDiscardedJob[]
+  liked_jobs                 ApplicantLikedJob[]
+  EmployerLikedApplicant     EmployerLikedApplicant[]
+  EmployerDiscardedApplicant EmployerDiscardedApplicant[]
 
   @@map("job_postings")
 }
 
-model DiscardedJob {
-  id           String   @id @default(uuid())
-  created_at   DateTime @default(now())
-  
+model ApplicantDiscardedJob {
+  id         String   @id @default(uuid())
+  created_at DateTime @default(now())
+
   // Relations
   job_posting  JobPosting @relation(fields: [job_id], references: [id], onDelete: Cascade)
   job_id       String     @map("job_id")
@@ -123,13 +129,13 @@ model DiscardedJob {
   applicant_id String     @map("applicant_id")
 
   @@unique([job_id, applicant_id])
-  @@map("discarded_jobs")
+  @@map("applicant_discarded_jobs")
 }
 
-model LikedJob {
-  id           String   @id @default(uuid())
-  created_at   DateTime @default(now())
-  
+model ApplicantLikedJob {
+  id         String   @id @default(uuid())
+  created_at DateTime @default(now())
+
   // Relations
   job_posting  JobPosting @relation(fields: [job_id], references: [id], onDelete: Cascade)
   job_id       String     @map("job_id")
@@ -137,5 +143,39 @@ model LikedJob {
   applicant_id String     @map("applicant_id")
 
   @@unique([job_id, applicant_id])
-  @@map("liked_jobs")
-} 
+  @@map("applicant_liked_jobs")
+}
+
+model EmployerLikedApplicant {
+  id         String   @id @default(uuid())
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  // Relations
+  applicant    Applicant  @relation(fields: [applicant_id], references: [id], onDelete: Cascade)
+  applicant_id String     @map("applicant_id")
+  employer     Employer   @relation(fields: [employer_id], references: [id], onDelete: Cascade)
+  employer_id  String     @map("employer_id")
+  job_posting  JobPosting @relation(fields: [job_id], references: [id], onDelete: Cascade)
+  job_id       String     @map("job_id")
+
+  @@unique([job_id, employer_id, applicant_id])
+  @@map("employer_liked_applicants")
+}
+
+model EmployerDiscardedApplicant {
+  id         String   @id @default(uuid())
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  // Relations
+  applicant    Applicant  @relation(fields: [applicant_id], references: [id], onDelete: Cascade)
+  applicant_id String     @map("applicant_id")
+  employer     Employer   @relation(fields: [employer_id], references: [id], onDelete: Cascade)
+  employer_id  String     @map("employer_id")
+  job_posting  JobPosting @relation(fields: [job_id], references: [id], onDelete: Cascade)
+  job_id       String     @map("job_id")
+
+  @@unique([job_id, employer_id, applicant_id])
+  @@map("employer_discarded_applicants")
+}
