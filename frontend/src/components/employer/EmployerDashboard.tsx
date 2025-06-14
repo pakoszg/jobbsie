@@ -3,12 +3,7 @@ import { EmployerHeader } from './EmployerHeader';
 import { UserProfile } from '../UserProfile';
 import { CreateJobForm } from './CreateJobForm';
 
-import {
-  PlusIcon,
-  PencilIcon,
-  TrashIcon,
-  EyeIcon,
-} from '@heroicons/react/24/outline';
+import { PlusIcon, EyeIcon } from '@heroicons/react/24/outline';
 import { useCreateJob, useGetJobs } from '../../hooks/useJobs';
 import type { ApiUser } from '../../types';
 import type { CreateJobRequest } from '../../types/job';
@@ -29,7 +24,7 @@ export function EmployerDashboard({
     'active'
   );
 
-  const { data: jobs, isLoading, error, refetch } = useGetJobs();
+  const { data: jobs } = useGetJobs();
   const createJobMutation = useCreateJob();
 
   const handleProfileClick = () => {
@@ -139,8 +134,7 @@ export function EmployerDashboard({
               <div className='flex space-x-1'>
                 {[
                   { key: 'active', label: 'Active Jobs' },
-                  { key: 'draft', label: 'Drafts' },
-                  { key: 'expired', label: 'Expired' },
+                  { key: 'expired', label: 'Expired Jobs' },
                 ].map(({ key, label }) => (
                   <button
                     key={key}

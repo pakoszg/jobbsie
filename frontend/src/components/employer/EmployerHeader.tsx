@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import {
   Bars3Icon,
   BellIcon,
-  PlusIcon,
   UserCircleIcon,
   ChevronDownIcon,
   ArrowRightOnRectangleIcon,
@@ -20,8 +19,6 @@ interface EmployerHeaderProps {
 export const EmployerHeader: React.FC<EmployerHeaderProps> = ({
   user,
   onProfileClick,
-  onCreateJobClick,
-  onJobsClick,
   onLogout,
 }) => {
   const [showDropdown, setShowDropdown] = useState(false);
@@ -73,25 +70,6 @@ export const EmployerHeader: React.FC<EmployerHeaderProps> = ({
 
           {/* Right side - Employer actions */}
           <div className='flex items-center space-x-2 md:space-x-3'>
-            {/* Create Job Button */}
-            <button
-              onClick={onCreateJobClick}
-              className='flex items-center space-x-2 bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm'
-              title='Create Job Posting'
-            >
-              <PlusIcon className='h-4 w-4' />
-              <span className='hidden md:inline'>Create Job</span>
-            </button>
-
-            {/* My Jobs */}
-            <button
-              onClick={onJobsClick}
-              className='px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors text-sm font-medium text-gray-700 hover:text-gray-900'
-              title='My Job Postings'
-            >
-              My Jobs
-            </button>
-
             {/* Notifications */}
             <button className='p-2 rounded-lg hover:bg-gray-100 transition-colors relative'>
               <BellIcon className='h-5 w-5 text-gray-600' />
