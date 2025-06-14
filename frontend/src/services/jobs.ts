@@ -24,6 +24,12 @@ export const getJobs = async (): Promise<JobsListResponse> => {
   return data;
 };
 
+// Get one job at a time for applicant
+export const getApplicantJob = async (id: string): Promise<JobResponse> => {
+  const { data } = await api.get(`/jobs/applicant/${id}`);
+  return data;
+};
+
 // Get a single job by ID
 export const getJob = async (id: string): Promise<JobResponse> => {
   const { data } = await api.get(`/jobs/${id}`);

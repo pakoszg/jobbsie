@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getJobs, createJob } from '../services/jobs';
+import { getJobs, createJob, getApplicantJob } from '../services/jobs';
 import { api } from '../lib/api';
 import type { CreateJobRequest, JobResponse } from '../types/job';
 
@@ -8,6 +8,14 @@ export const useGetJobs = () => {
   return useQuery({
     queryKey: ['jobs'],
     queryFn: () => getJobs(),
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
+};
+
+export const useGetApplicantJob = (id: string) => {
+  return useQuery({
+    queryKey: ['applicant-jobs', id],
+    queryFn: () => getApplicantJob(id),
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 };

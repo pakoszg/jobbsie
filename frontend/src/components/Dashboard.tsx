@@ -2,7 +2,7 @@ import { useCurrentUser, useLogout } from '../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { LoadingSpinner } from './LoadingSpinner';
 import { ErrorMessage } from './ErrorMessage';
-import { ApplicantDashboard } from './ApplicantDashboard';
+import { ApplicantDashboard } from './applicant/ApplicantDashboard';
 import { EmployerDashboard } from './employer/EmployerDashboard';
 
 export function Dashboard() {

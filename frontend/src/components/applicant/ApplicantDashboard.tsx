@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import { Header } from './Header';
-import { UserProfile } from './UserProfile';
-import { EditProfile } from './EditProfile';
-import { LoadingSpinner } from './LoadingSpinner';
-import { ErrorMessage } from './ErrorMessage';
-import type { Job, ApiUser } from '../types';
-import { useGetJobs } from '../hooks/useJobs';
+import { Header } from '../Header';
+import { UserProfile } from '../UserProfile';
+import { EditProfile } from '../EditProfile';
+import { LoadingSpinner } from '../LoadingSpinner';
+import { ErrorMessage } from '../ErrorMessage';
+import type { Job, ApiUser } from '../../types';
+import { useGetApplicantJob, useGetJobs } from '../../hooks/useJobs';
 
 interface ApplicantDashboardProps {
   currentUser: ApiUser;
@@ -29,7 +29,12 @@ export function ApplicantDashboard({
 
   // Fetch jobs from API (only for swipe mode)
 
-  const { data: jobs, isLoading, error, refetch } = useGetJobs();
+  const {
+    data: currentJob,
+    isLoading,
+    error,
+    refetch,
+  } = useGetApplicantJob(currentUser.applicant?.id ?? ''); // TODO: fix this
 
   const handleProfileClick = () => {
     setShowProfile(true);
@@ -47,8 +52,6 @@ export function ApplicantDashboard({
     // This would typically update the user preferences via an API call
     console.log('Saving preferences:', preferences);
   };
-
-  const currentJob = jobs?.jobs?.[currentJobIndex];
 
   // Get display name for welcome message
   const getDisplayName = () => {

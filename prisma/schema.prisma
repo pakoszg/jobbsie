@@ -50,15 +50,15 @@ model Employer {
 }
 
 model Applicant {
-  id              String        @id @default(uuid())
-  created_at      DateTime      @default(now())
-  updated_at      DateTime      @updatedAt
-  is_deleted      Boolean       @default(false)
-  first_name      String        @map("first_name")
-  last_name       String        @map("last_name")
-  phone_number    String?       @map("phone_number")
-  introduction    String?
-  job_preferences JobCategory[]
+  id             String        @id @default(uuid())
+  created_at     DateTime      @default(now())
+  updated_at     DateTime      @updatedAt
+  is_deleted     Boolean       @default(false)
+  first_name     String        @map("first_name")
+  last_name      String        @map("last_name")
+  phone_number   String?       @map("phone_number")
+  introduction   String?
+  job_categories JobCategory[] @relation("ApplicantJobCategories")
 
   // Relations
   user                       User?
@@ -97,7 +97,7 @@ model JobCategory {
 
   // Relations
   job_postings JobPosting[]
-  Applicant    Applicant[]
+  applicants   Applicant[]  @relation("ApplicantJobCategories")
 
   @@map("job_categories")
 }

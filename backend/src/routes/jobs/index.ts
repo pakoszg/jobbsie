@@ -1,10 +1,14 @@
 import express from 'express';
-import getJob from './getJob';
-import { authenticateToken, requireEmployer } from '../../middleware/auth';
+import {
+  authenticateToken,
+  requireApplicant,
+  requireEmployer,
+} from '../../middleware/auth';
 import getEmployerJobs from './getEmployerJobs';
 import createJob from './createJob';
 import updateJob from './updateJob';
 import removeJob from './removeJob';
+import getOneJobForApplicant from './getOneJobForApplicant';
 
 const jobsRouter = express.Router();
 
@@ -12,7 +16,7 @@ const jobsRouter = express.Router();
 jobsRouter.use(authenticateToken);
 
 // Applicant-only routes
-jobsRouter.get('/applicant/:id', getJob);
+jobsRouter.get('/applicant/:id', requireApplicant, getOneJobForApplicant);
 
 // Employer-only routes
 jobsRouter.use(requireEmployer);

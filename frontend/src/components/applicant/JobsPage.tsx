@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { useJobs } from '../hooks/useJobs';
+import { useJobs } from '../../hooks/useJobs';
 import { JobCard } from './JobCard';
-import { LoadingSpinner } from './LoadingSpinner';
-import { ErrorMessage } from './ErrorMessage';
-import type { JobsFilters } from '../services/jobs';
+import { LoadingSpinner } from '../LoadingSpinner';
+import { ErrorMessage } from '../ErrorMessage';
+import type { JobsFilters } from '../../services/jobs';
 
 export const JobsPage = () => {
   const [filters, setFilters] = useState<JobsFilters>({

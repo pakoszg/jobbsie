@@ -2,32 +2,21 @@ import { Request, Response } from 'express';
 import { prisma } from '../../config/database';
 import type { JobResponse } from '../../types/job';
 
-// @route   GET /api/jobs/:id
+// @route   GET /api/jobs/applicant/:id
 // @desc    Get a single job posting
 // @access  Public
-const getJob = async (req: Request, res: Response): Promise<void> => {
+const getOneJobForApplicant = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     const { id } = req.params;
 
     const job = await prisma.jobPosting.findUnique({
       where: { id },
       include: {
-        employer: {
-          select: {
-            id: true,
-            name: true,
-            country: true,
-            city: true,
-            website_url: true,
-          },
-        },
-        job_category: {
-          select: {
-            id: true,
-            name: true,
-            category: true,
-          },
-        },
+        employer: true,
+        job_category: true,
       },
     });
 
@@ -56,4 +45,4 @@ const getJob = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
-export default getJob;
+export default getOneJobForApplicant;
