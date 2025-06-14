@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { EmployerHeader } from './EmployerHeader';
-import { UserProfile } from './UserProfile';
+import { UserProfile } from '../UserProfile';
 import { CreateJobForm } from './CreateJobForm';
 
 import {
@@ -9,9 +9,9 @@ import {
   TrashIcon,
   EyeIcon,
 } from '@heroicons/react/24/outline';
-import { useCreateJob } from '../hooks/useJobs';
-import type { ApiUser } from '../types';
-import type { CreateJobRequest } from '../types/job';
+import { useCreateJob } from '../../hooks/useJobs';
+import type { ApiUser } from '../../types';
+import type { CreateJobRequest } from '../../types/job';
 
 interface EmployerDashboardProps {
   currentUser: ApiUser;

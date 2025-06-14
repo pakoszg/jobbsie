@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
-import { LoadingSpinner } from './LoadingSpinner';
-import { CreateJobSchema, type CreateJobRequest } from '../types/job';
-import { useCategories } from '../hooks/useCategories';
+import { LoadingSpinner } from '../LoadingSpinner';
+import { CreateJobSchema, type CreateJobRequest } from '../../types/job';
+import { useCategories } from '../../hooks/useCategories';
 
 interface CreateJobFormProps {
   isOpen: boolean;
