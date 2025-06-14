@@ -28,7 +28,4 @@ export interface JobResponse {
 // Jobs list response
 export interface JobsListResponse {
   jobs: JobResponse[];
-  totalPages: number;
-  currentPage: number;
-  total: number;
 }

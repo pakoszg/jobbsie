@@ -1,6 +1,6 @@
 import express, { Request, Response } from 'express';
 import { prisma } from '../config/database';
-import { authenticateToken } from '../middleware/auth';
+import { authenticateToken, requireEmployer } from '../middleware/auth';
 // Import local schema and types
 import { CreateJobSchema, CreateJobRequest } from '../schemas/job';
 import type { JobResponse, JobsListResponse } from '../types/job';
@@ -115,53 +115,20 @@ router.post(
   }
 );
 
-// @route   GET /api/jobs
-// @desc    Get all job postings with filtering
-// @access  Public
-router.get('/', async (req: Request, res: Response): Promise<void> => {
-  try {
-    const {
-      page = '1',
-      limit = '10',
-      category,
-      search,
-      expired = 'false',
-    } = req.query;
-
-    const pageNumber = parseInt(page as string, 10);
-    const limitNumber = parseInt(limit as string, 10);
-    const skip = (pageNumber - 1) * limitNumber;
-    const includeExpired = expired === 'true';
-
-    // Build where clause
-    const where: any = {};
-
-    if (!includeExpired) {
-      where.expiry_date = {
-        gte: new Date(),
-      };
-    }
-
-    if (category) {
-      where.job_category = {
-        category: category as string,
-      };
-    }
-
-    if (search) {
-      where.OR = [
-        { title: { contains: search as string, mode: 'insensitive' } },
-        { description: { contains: search as string, mode: 'insensitive' } },
-        { job_name: { contains: search as string, mode: 'insensitive' } },
-      ];
-    }
-
-    // Get jobs with pagination
-    const [jobs, total] = await Promise.all([
-      prisma.jobPosting.findMany({
-        where,
-        skip,
-        take: limitNumber,
+// @route   GET /api/jobs/employer
+// @desc    Get all employer's job postings
+// @access  Private (Employer only)
+router.get(
+  '/employer',
+  authenticateToken,
+  requireEmployer,
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      // Get jobs with pagination
+      const jobs = await prisma.jobPosting.findMany({
+        where: {
+          employer_id: req.user?.id,
+        },
         include: {
           employer: {
             select: {
@@ -182,39 +149,33 @@ router.get('/', async (req: Request, res: Response): Promise<void> => {
         orderBy: {
           created_at: 'desc',
         },
-      }),
-      prisma.jobPosting.count({ where }),
-    ]);
+      });
 
-    // Transform jobs to match shared JobResponse type
-    const transformedJobs: JobResponse[] = jobs.map((job) => ({
-      id: job.id,
-      title: job.title,
-      jobName: job.job_name,
-      description: job.description,
-      hourlySalaryRange: job.hourly_salary_range,
-      expiryDate: job.expiry_date.toISOString().split('T')[0]!,
-      createdAt: job.created_at.toISOString(),
-      updatedAt: job.updated_at.toISOString(),
-      employer: job.employer,
-      jobCategory: job.job_category,
-    }));
+      // Transform jobs to match shared JobResponse type
+      const transformedJobs: JobResponse[] = jobs.map((job) => ({
+        id: job.id,
+        createdAt: job.created_at.toISOString(),
+        updatedAt: job.updated_at.toISOString(),
+        title: job.title,
+        jobName: job.job_name,
+        description: job.description,
+        hourlySalaryRange: job.hourly_salary_range,
+        expiryDate: job.expiry_date.toISOString().split('T')[0]!,
+        employer: job.employer,
+        jobCategory: job.job_category,
+      }));
 
-    const totalPages = Math.ceil(total / limitNumber);
+      const response: JobsListResponse = {
+        jobs: transformedJobs,
+      };
 
-    const response: JobsListResponse = {
-      jobs: transformedJobs,
-      totalPages,
-      currentPage: pageNumber,
-      total,
-    };
-
-    res.json(response);
-  } catch (error) {
-    console.error('Get jobs error:', error);
-    res.status(500).json({ message: 'Server error' });
+      res.json(response);
+    } catch (error) {
+      console.error('Get jobs error:', error);
+      res.status(500).json({ message: 'Server error' });
+    }
   }
-});
+);
 
 // @route   GET /api/jobs/:id
 // @desc    Get a single job posting
