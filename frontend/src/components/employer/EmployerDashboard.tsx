@@ -9,9 +9,10 @@ import {
   TrashIcon,
   EyeIcon,
 } from '@heroicons/react/24/outline';
-import { useCreateJob } from '../../hooks/useJobs';
+import { useCreateJob, useGetJobs } from '../../hooks/useJobs';
 import type { ApiUser } from '../../types';
 import type { CreateJobRequest } from '../../types/job';
+import { JobList } from './JobList';
 
 interface EmployerDashboardProps {
   currentUser: ApiUser;
@@ -28,47 +29,8 @@ export function EmployerDashboard({
     'active'
   );
 
+  const { data: jobs, isLoading, error, refetch } = useGetJobs();
   const createJobMutation = useCreateJob();
-
-  // Mock job data (in real implementation, fetch from API)
-  const mockJobs: Array<{
-    id: string;
-    title: string;
-    jobName: string;
-    description: string;
-    hourlySalaryRange: string;
-    expiryDate: string;
-    status: 'active' | 'draft' | 'expired';
-    applicants: number;
-    views: number;
-    createdAt: string;
-  }> = [
-    {
-      id: '1',
-      title: 'Senior React Developer',
-      jobName: 'React Developer',
-      description:
-        'Looking for an experienced React developer to join our team...',
-      hourlySalaryRange: '$60-90/hour',
-      expiryDate: '2024-12-31',
-      status: 'active',
-      applicants: 15,
-      views: 234,
-      createdAt: '2024-01-15',
-    },
-    {
-      id: '2',
-      title: 'UI/UX Designer',
-      jobName: 'UI Designer',
-      description: 'We are seeking a creative UI/UX designer...',
-      hourlySalaryRange: '$45-65/hour',
-      expiryDate: '2024-11-30',
-      status: 'active',
-      applicants: 8,
-      views: 156,
-      createdAt: '2024-01-10',
-    },
-  ];
 
   const handleProfileClick = () => {
     setShowProfile(true);
@@ -95,13 +57,6 @@ export function EmployerDashboard({
       },
     });
   };
-
-  const filteredJobs = mockJobs.filter((job) => {
-    if (activeTab === 'active') return job.status === 'active';
-    if (activeTab === 'draft') return job.status === 'draft';
-    if (activeTab === 'expired') return job.status === 'expired';
-    return true;
-  });
 
   return (
     <div className='h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex flex-col overflow-hidden'>
@@ -135,7 +90,12 @@ export function EmployerDashboard({
               <div>
                 <p className='text-sm font-medium text-gray-600'>Active Jobs</p>
                 <p className='text-2xl font-bold text-gray-900'>
-                  {mockJobs.filter((j) => j.status === 'active').length}
+                  {
+                    jobs?.jobs?.filter((j) => {
+                      const expiryDate = new Date(j.expiryDate);
+                      return expiryDate > new Date();
+                    }).length
+                  }
                 </p>
               </div>
               <div className='w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center'>
@@ -150,9 +110,7 @@ export function EmployerDashboard({
                 <p className='text-sm font-medium text-gray-600'>
                   Total Applications
                 </p>
-                <p className='text-2xl font-bold text-gray-900'>
-                  {mockJobs.reduce((sum, job) => sum + job.applicants, 0)}
-                </p>
+                <p className='text-2xl font-bold text-gray-900'>0</p>
               </div>
               <div className='w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center'>
                 <EyeIcon className='w-5 h-5 text-blue-600' />
@@ -164,9 +122,7 @@ export function EmployerDashboard({
             <div className='flex items-center justify-between'>
               <div>
                 <p className='text-sm font-medium text-gray-600'>Total Views</p>
-                <p className='text-2xl font-bold text-gray-900'>
-                  {mockJobs.reduce((sum, job) => sum + job.views, 0)}
-                </p>
+                <p className='text-2xl font-bold text-gray-900'>0</p>
               </div>
               <div className='w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center'>
                 <EyeIcon className='w-5 h-5 text-purple-600' />
@@ -211,75 +167,11 @@ export function EmployerDashboard({
           </div>
 
           {/* Job List */}
-          <div className='flex-1 overflow-y-auto p-4'>
-            {filteredJobs.length === 0 ? (
-              <div className='text-center py-12'>
-                <div className='w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4'>
-                  <PlusIcon className='h-8 w-8 text-gray-400' />
-                </div>
-                <h3 className='text-lg font-medium text-gray-900 mb-2'>
-                  No {activeTab} jobs yet
-                </h3>
-                <p className='text-gray-500 mb-4'>
-                  {activeTab === 'active'
-                    ? 'Create your first job posting to start finding candidates.'
-                    : `You don't have any ${activeTab} jobs at the moment.`}
-                </p>
-                {activeTab === 'active' && (
-                  <button
-                    onClick={handleCreateJobClick}
-                    className='bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium'
-                  >
-                    Create Your First Job
-                  </button>
-                )}
-              </div>
-            ) : (
-              <div className='space-y-4'>
-                {filteredJobs.map((job) => (
-                  <div
-                    key={job.id}
-                    className='border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow'
-                  >
-                    <div className='flex items-start justify-between'>
-                      <div className='flex-1'>
-                        <h3 className='text-lg font-semibold text-gray-900 mb-1'>
-                          {job.title}
-                        </h3>
-                        <p className='text-gray-600 mb-2 line-clamp-2'>
-                          {job.description}
-                        </p>
-                        <div className='flex items-center space-x-4 text-sm text-gray-500'>
-                          <span>{job.hourlySalaryRange}</span>
-                          <span>•</span>
-                          <span>{job.applicants} applications</span>
-                          <span>•</span>
-                          <span>{job.views} views</span>
-                          <span>•</span>
-                          <span>
-                            Expires{' '}
-                            {new Date(job.expiryDate).toLocaleDateString()}
-                          </span>
-                        </div>
-                      </div>
-
-                      <div className='flex items-center space-x-2 ml-4'>
-                        <button className='p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors'>
-                          <EyeIcon className='h-4 w-4' />
-                        </button>
-                        <button className='p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-lg transition-colors'>
-                          <PencilIcon className='h-4 w-4' />
-                        </button>
-                        <button className='p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors'>
-                          <TrashIcon className='h-4 w-4' />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+          <JobList
+            jobs={jobs?.jobs || []}
+            activeTab={activeTab}
+            handleCreateJobClick={handleCreateJobClick}
+          />
         </div>
       </div>
 

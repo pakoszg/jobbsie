@@ -1,5 +1,4 @@
 import { api } from '../lib/api';
-import type { Job } from '../types';
 import type {
   CreateJobRequest,
   JobResponse,
@@ -20,18 +19,8 @@ export interface JobsFilters {
 export interface UpdateJobRequest extends Partial<CreateJobRequest> {}
 
 // Get all jobs with optional filtering
-export const getJobs = async (
-  filters: JobsFilters = {}
-): Promise<JobsListResponse> => {
-  const params = new URLSearchParams();
-
-  Object.entries(filters).forEach(([key, value]) => {
-    if (value !== undefined && value !== null) {
-      params.append(key, value.toString());
-    }
-  });
-
-  const { data } = await api.get(`/jobs?${params.toString()}`);
+export const getJobs = async (): Promise<JobsListResponse> => {
+  const { data } = await api.get(`/jobs/employer`);
   return data;
 };
 

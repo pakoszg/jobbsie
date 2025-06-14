@@ -11,13 +11,6 @@ export interface JobResponse {
   expiryDate: string;
   createdAt: string;
   updatedAt: string;
-  employer: {
-    id: string;
-    name: string;
-    country: string;
-    city: string;
-    website_url?: string | null;
-  };
   jobCategory: {
     id: string;
     name: string;

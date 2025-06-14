@@ -4,8 +4,8 @@ import { UserProfile } from './UserProfile';
 import { EditProfile } from './EditProfile';
 import { LoadingSpinner } from './LoadingSpinner';
 import { ErrorMessage } from './ErrorMessage';
-import { useJobs } from '../hooks/useJobs';
 import type { Job, ApiUser } from '../types';
+import { useGetJobs } from '../hooks/useJobs';
 
 interface ApplicantDashboardProps {
   currentUser: ApiUser;
@@ -28,13 +28,8 @@ export function ApplicantDashboard({
   const [showLikedJobs, setShowLikedJobs] = useState(false);
 
   // Fetch jobs from API (only for swipe mode)
-  const {
-    data: jobsData,
-    isLoading,
-    error,
-    refetch,
-  } = useJobs(currentView === 'swipe' ? { expired: false, limit: 50 } : {});
-  const jobs = jobsData?.jobs || [];
+
+  const { data: jobs, isLoading, error, refetch } = useGetJobs();
 
   const handleProfileClick = () => {
     setShowProfile(true);
@@ -53,7 +48,7 @@ export function ApplicantDashboard({
     console.log('Saving preferences:', preferences);
   };
 
-  const currentJob = jobs[currentJobIndex];
+  const currentJob = jobs?.jobs?.[currentJobIndex];
 
   // Get display name for welcome message
   const getDisplayName = () => {

@@ -51,6 +51,8 @@ export interface JobResponse {
   expiryDate: string;
   createdAt: string;
   updatedAt: string;
+  employerId: string;
+  jobCategoryId: string;
   employer: {
     id: string;
     name: string;
@@ -67,7 +69,4 @@ export interface JobResponse {
 // Jobs list response
 export interface JobsListResponse {
   jobs: JobResponse[];
-  totalPages: number;
-  currentPage: number;
-  total: number;
 }

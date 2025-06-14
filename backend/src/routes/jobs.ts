@@ -100,7 +100,6 @@ router.post(
         expiryDate: newJob.expiry_date.toISOString().split('T')[0]!, // Format as YYYY-MM-DD
         createdAt: newJob.created_at.toISOString(),
         updatedAt: newJob.updated_at.toISOString(),
-        employer: newJob.employer,
         jobCategory: newJob.job_category,
       };
 
@@ -123,21 +122,14 @@ router.get(
   authenticateToken,
   requireEmployer,
   async (req: Request, res: Response): Promise<void> => {
+    console.log('req.user', req.user);
+
     try {
-      // Get jobs with pagination
       const jobs = await prisma.jobPosting.findMany({
         where: {
-          employer_id: req.user?.id,
+          employer_id: req.user?.profile?.id,
         },
         include: {
-          employer: {
-            select: {
-              id: true,
-              name: true,
-              country: true,
-              city: true,
-            },
-          },
           job_category: {
             select: {
               id: true,
@@ -161,7 +153,6 @@ router.get(
         description: job.description,
         hourlySalaryRange: job.hourly_salary_range,
         expiryDate: job.expiry_date.toISOString().split('T')[0]!,
-        employer: job.employer,
         jobCategory: job.job_category,
       }));
 
@@ -221,7 +212,6 @@ router.get('/:id', async (req: Request, res: Response): Promise<void> => {
       expiryDate: job.expiry_date.toISOString().split('T')[0]!,
       createdAt: job.created_at.toISOString(),
       updatedAt: job.updated_at.toISOString(),
-      employer: job.employer,
       jobCategory: job.job_category,
     };
 

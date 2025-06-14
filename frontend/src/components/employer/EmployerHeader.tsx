@@ -7,7 +7,7 @@ import {
   ChevronDownIcon,
   ArrowRightOnRectangleIcon,
 } from '@heroicons/react/24/outline';
-import type { ApiUser } from '../types';
+import type { ApiUser } from '../../types';
 
 interface EmployerHeaderProps {
   user: ApiUser;
