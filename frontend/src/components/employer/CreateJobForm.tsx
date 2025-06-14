@@ -1,309 +1,280 @@
-import { useState } from 'react';
+import { Dialog } from '@headlessui/react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
-import { LoadingSpinner } from '../LoadingSpinner';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { CreateJobSchema, type CreateJobRequest } from '../../types/job';
+import type { JobResponse } from '../../types/job';
 import { useCategories } from '../../hooks/useCategories';
 
 interface CreateJobFormProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (jobData: CreateJobRequest) => void;
-  isLoading?: boolean;
+  onSubmit: (data: CreateJobRequest) => void;
+  isLoading: boolean;
+  initialData?: JobResponse;
 }
 
-export const CreateJobForm: React.FC<CreateJobFormProps> = ({
+// Extended form type to include temporary fields
+interface FormData extends CreateJobRequest {
+  minSalary?: number;
+  maxSalary?: number;
+}
+
+export function CreateJobForm({
   isOpen,
   onClose,
   onSubmit,
-  isLoading = false,
-}) => {
-  const [formData, setFormData] = useState<CreateJobRequest>({
-    title: '',
-    description: '',
-    jobName: '',
-    hourlySalaryRange: '',
-    expiryDate: '',
-    jobCategoryId: '',
+  isLoading,
+  initialData,
+}: CreateJobFormProps) {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+    setValue,
+    watch,
+  } = useForm<FormData>({
+    resolver: zodResolver(CreateJobSchema),
+    defaultValues: initialData
+      ? {
+          title: initialData.title,
+          jobName: initialData.jobName,
+          description: initialData.description,
+          hourlySalaryRange: initialData.hourlySalaryRange,
+          expiryDate: initialData.expiryDate,
+          jobCategoryId: initialData.jobCategory.id,
+          // Parse initial salary range
+          minSalary: parseInt(
+            initialData.hourlySalaryRange.match(/\$(\d+)/)?.[1] || '0'
+          ),
+          maxSalary: parseInt(
+            initialData.hourlySalaryRange.match(/-(\d+)/)?.[1] || '0'
+          ),
+        }
+      : undefined,
   });
 
-  const [errors, setErrors] = useState<Partial<CreateJobRequest>>({});
+  const handleClose = () => {
+    reset();
+    onClose();
+  };
+
+  // Watch min and max salary values
+  const minSalary = watch('minSalary');
+  const maxSalary = watch('maxSalary');
+
+  // Update hourlySalaryRange when min or max changes
+  const updateHourlySalaryRange = (min: number, max: number) => {
+    setValue('hourlySalaryRange', `$${min}-${max}/hour`);
+  };
 
   // Fetch job categories from API
   const { data: jobCategories = [], isLoading: categoriesLoading } =
     useCategories();
 
-  const handleInputChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-
-    // Clear error when user starts typing
-    if (errors[name as keyof CreateJobRequest]) {
-      setErrors((prev) => ({
-        ...prev,
-        [name]: undefined,
-      }));
-    }
-  };
-
-  const validateForm = (): boolean => {
-    const validation = CreateJobSchema.safeParse(formData);
-
-    if (!validation.success) {
-      const newErrors: Partial<CreateJobRequest> = {};
-
-      validation.error.issues.forEach((issue) => {
-        const field = issue.path[0] as keyof CreateJobRequest;
-        newErrors[field] = issue.message;
-      });
-
-      setErrors(newErrors);
-      return false;
-    }
-
-    setErrors({});
-    return true;
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (validateForm()) {
-      onSubmit(formData);
-    }
-  };
-
-  const handleReset = () => {
-    setFormData({
-      title: '',
-      description: '',
-      jobName: '',
-      hourlySalaryRange: '',
-      expiryDate: '',
-      jobCategoryId: '',
-    });
-    setErrors({});
-  };
-
-  if (!isOpen) return null;
-
   return (
-    <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50'>
-      <div className='bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col'>
-        {/* Header */}
-        <div className='flex items-center justify-between p-6 border-b border-gray-200'>
-          <h2 className='text-2xl font-bold text-gray-900'>
-            Create Job Posting
-          </h2>
-          <button
-            onClick={onClose}
-            className='p-2 hover:bg-gray-100 rounded-lg transition-colors'
-          >
-            <XMarkIcon className='h-6 w-6 text-gray-500' />
-          </button>
-        </div>
+    <Dialog open={isOpen} onClose={handleClose} className='relative z-50'>
+      <div className='fixed inset-0 bg-black/30' aria-hidden='true' />
 
-        {/* Form */}
-        <form
-          onSubmit={handleSubmit}
-          className='flex-1 overflow-y-auto p-6 space-y-6'
-        >
-          {/* Job Title */}
-          <div>
-            <label
-              htmlFor='title'
-              className='block text-sm font-medium text-gray-700 mb-2'
+      <div className='fixed inset-0 flex items-center justify-center p-4'>
+        <Dialog.Panel className='mx-auto max-w-2xl w-full bg-white rounded-xl shadow-lg'>
+          <div className='flex items-center justify-between p-6 border-b'>
+            <Dialog.Title className='text-xl font-semibold text-gray-900'>
+              {initialData ? 'Edit Job' : 'Create New Job'}
+            </Dialog.Title>
+            <button
+              onClick={handleClose}
+              className='text-gray-400 hover:text-gray-500'
             >
-              Job Title
-            </label>
-            <input
-              type='text'
-              id='title'
-              name='title'
-              value={formData.title}
-              onChange={handleInputChange}
-              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                errors.title ? 'border-red-500' : 'border-gray-300'
-              }`}
-              placeholder='e.g., Senior React Developer'
-            />
-            {errors.title && (
-              <p className='mt-1 text-sm text-red-600'>{errors.title}</p>
-            )}
+              <XMarkIcon className='h-6 w-6' />
+            </button>
           </div>
 
-          {/* Job Name */}
-          <div>
-            <label
-              htmlFor='jobName'
-              className='block text-sm font-medium text-gray-700 mb-2'
-            >
-              Job Name
-            </label>
-            <input
-              type='text'
-              id='jobName'
-              name='jobName'
-              value={formData.jobName}
-              onChange={handleInputChange}
-              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                errors.jobName ? 'border-red-500' : 'border-gray-300'
-              }`}
-              placeholder='e.g., React Developer'
-            />
-            {errors.jobName && (
-              <p className='mt-1 text-sm text-red-600'>{errors.jobName}</p>
-            )}
-          </div>
+          <form onSubmit={handleSubmit(onSubmit)} className='p-6'>
+            <div className='space-y-6'>
+              <div>
+                <label
+                  htmlFor='title'
+                  className='block text-sm font-medium text-gray-700'
+                >
+                  Job Title
+                </label>
+                <input
+                  type='text'
+                  id='title'
+                  {...register('title')}
+                  className='mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500'
+                />
+                {errors.title && (
+                  <p className='mt-1 text-sm text-red-600'>
+                    {errors.title.message}
+                  </p>
+                )}
+              </div>
 
-          {/* Job Category */}
-          <div>
-            <label
-              htmlFor='jobCategoryId'
-              className='block text-sm font-medium text-gray-700 mb-2'
-            >
-              Job Category
-            </label>
-            <select
-              id='jobCategoryId'
-              name='jobCategoryId'
-              value={formData.jobCategoryId}
-              onChange={handleInputChange}
-              disabled={categoriesLoading}
-              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                errors.jobCategoryId ? 'border-red-500' : 'border-gray-300'
-              }`}
-            >
-              <option value=''>
-                {categoriesLoading
-                  ? 'Loading categories...'
-                  : 'Select a category'}
-              </option>
-              {jobCategories.map((category) => (
-                <option key={category.id} value={category.id}>
-                  {category.name}
-                </option>
-              ))}
-            </select>
-            {errors.jobCategoryId && (
-              <p className='mt-1 text-sm text-red-600'>
-                {errors.jobCategoryId}
-              </p>
-            )}
-          </div>
+              <div>
+                <label
+                  htmlFor='jobName'
+                  className='block text-sm font-medium text-gray-700'
+                >
+                  Job Name
+                </label>
+                <input
+                  type='text'
+                  id='jobName'
+                  {...register('jobName')}
+                  className='mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500'
+                />
+                {errors.jobName && (
+                  <p className='mt-1 text-sm text-red-600'>
+                    {errors.jobName.message}
+                  </p>
+                )}
+              </div>
 
-          {/* Salary Range */}
-          <div>
-            <label
-              htmlFor='hourlySalaryRange'
-              className='block text-sm font-medium text-gray-700 mb-2'
-            >
-              Hourly Salary Range
-            </label>
-            <input
-              type='text'
-              id='hourlySalaryRange'
-              name='hourlySalaryRange'
-              value={formData.hourlySalaryRange}
-              onChange={handleInputChange}
-              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                errors.hourlySalaryRange ? 'border-red-500' : 'border-gray-300'
-              }`}
-              placeholder='e.g., $60-90/hour'
-            />
-            {errors.hourlySalaryRange && (
-              <p className='mt-1 text-sm text-red-600'>
-                {errors.hourlySalaryRange}
-              </p>
-            )}
-          </div>
+              <div>
+                <label
+                  htmlFor='description'
+                  className='block text-sm font-medium text-gray-700'
+                >
+                  Description
+                </label>
+                <textarea
+                  id='description'
+                  rows={4}
+                  {...register('description')}
+                  className='mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500'
+                />
+                {errors.description && (
+                  <p className='mt-1 text-sm text-red-600'>
+                    {errors.description.message}
+                  </p>
+                )}
+              </div>
 
-          {/* Expiry Date */}
-          <div>
-            <label
-              htmlFor='expiryDate'
-              className='block text-sm font-medium text-gray-700 mb-2'
-            >
-              Application Deadline
-            </label>
-            <input
-              type='date'
-              id='expiryDate'
-              name='expiryDate'
-              value={formData.expiryDate}
-              onChange={handleInputChange}
-              min={new Date().toISOString().split('T')[0]}
-              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                errors.expiryDate ? 'border-red-500' : 'border-gray-300'
-              }`}
-            />
-            {errors.expiryDate && (
-              <p className='mt-1 text-sm text-red-600'>{errors.expiryDate}</p>
-            )}
-          </div>
-
-          {/* Job Description */}
-          <div>
-            <label
-              htmlFor='description'
-              className='block text-sm font-medium text-gray-700 mb-2'
-            >
-              Job Description
-            </label>
-            <textarea
-              id='description'
-              name='description'
-              value={formData.description}
-              onChange={handleInputChange}
-              rows={6}
-              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none ${
-                errors.description ? 'border-red-500' : 'border-gray-300'
-              }`}
-              placeholder='Provide a detailed description of the job responsibilities, requirements, and qualifications...'
-            />
-            <div className='flex justify-between items-center mt-1'>
-              {errors.description && (
-                <p className='text-sm text-red-600'>{errors.description}</p>
+              <div className='grid grid-cols-2 gap-4'>
+                <div>
+                  <label
+                    htmlFor='minSalary'
+                    className='block text-sm font-medium text-gray-700'
+                  >
+                    Min Hourly Rate
+                  </label>
+                  <input
+                    type='number'
+                    id='minSalary'
+                    {...register('minSalary', {
+                      valueAsNumber: true,
+                      onChange: (e) => {
+                        const min = parseInt(e.target.value);
+                        if (min && maxSalary) {
+                          updateHourlySalaryRange(min, maxSalary);
+                        }
+                      },
+                    })}
+                    className='mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500'
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor='maxSalary'
+                    className='block text-sm font-medium text-gray-700'
+                  >
+                    Max Hourly Rate
+                  </label>
+                  <input
+                    type='number'
+                    id='maxSalary'
+                    {...register('maxSalary', {
+                      valueAsNumber: true,
+                      onChange: (e) => {
+                        const max = parseInt(e.target.value);
+                        if (max && minSalary) {
+                          updateHourlySalaryRange(minSalary, max);
+                        }
+                      },
+                    })}
+                    className='mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500'
+                  />
+                </div>
+              </div>
+              {errors.hourlySalaryRange && (
+                <p className='mt-1 text-sm text-red-600'>
+                  {errors.hourlySalaryRange.message}
+                </p>
               )}
-              <p className='text-sm text-gray-500 ml-auto'>
-                {formData.description.length}/1000 characters
-              </p>
-            </div>
-          </div>
-        </form>
 
-        {/* Footer */}
-        <div className='flex items-center justify-end space-x-3 p-6 border-t border-gray-200'>
-          <button
-            type='button'
-            onClick={handleReset}
-            className='px-4 py-2 text-gray-600 hover:text-gray-800 font-medium'
-          >
-            Reset
-          </button>
-          <button
-            type='button'
-            onClick={onClose}
-            className='px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 font-medium'
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleSubmit}
-            disabled={isLoading}
-            className='px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium flex items-center space-x-2'
-          >
-            {isLoading && <LoadingSpinner size='small' />}
-            <span>{isLoading ? 'Creating...' : 'Create Job'}</span>
-          </button>
-        </div>
+              <div>
+                <label
+                  htmlFor='expiryDate'
+                  className='block text-sm font-medium text-gray-700'
+                >
+                  Expiry Date
+                </label>
+                <input
+                  type='date'
+                  id='expiryDate'
+                  {...register('expiryDate')}
+                  className='mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500'
+                />
+                {errors.expiryDate && (
+                  <p className='mt-1 text-sm text-red-600'>
+                    {errors.expiryDate.message}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label
+                  htmlFor='jobCategoryId'
+                  className='block text-sm font-medium text-gray-700'
+                >
+                  Job Category
+                </label>
+                <select
+                  id='jobCategoryId'
+                  {...register('jobCategoryId')}
+                  className='mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500'
+                >
+                  <option value=''>Select a category</option>
+                  {jobCategories.map((category) => (
+                    <option key={category.id} value={category.id}>
+                      {category.name}
+                    </option>
+                  ))}
+                </select>
+                {errors.jobCategoryId && (
+                  <p className='mt-1 text-sm text-red-600'>
+                    {errors.jobCategoryId.message}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <div className='mt-6 flex justify-end space-x-3'>
+              <button
+                type='button'
+                onClick={handleClose}
+                className='px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50'
+              >
+                Cancel
+              </button>
+              <button
+                type='submit'
+                disabled={isLoading}
+                className='px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 disabled:opacity-50'
+              >
+                {isLoading
+                  ? 'Saving...'
+                  : initialData
+                  ? 'Update Job'
+                  : 'Create Job'}
+              </button>
+            </div>
+          </form>
+        </Dialog.Panel>
       </div>
-    </div>
+    </Dialog>
   );
-};
+}

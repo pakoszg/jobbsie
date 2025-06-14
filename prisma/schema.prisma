@@ -14,14 +14,15 @@ model User {
   id         String   @id @default(uuid())
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
+  is_deleted Boolean  @default(false)
   email      String   @unique
   password   String
 
   // Relations
-  applicant       Applicant?    @relation(fields: [applicant_id], references: [id])
-  applicant_id    String?       @unique
-  employer        Employer?     @relation(fields: [employer_id], references: [id])
-  employer_id     String?       @unique
+  applicant    Applicant? @relation(fields: [applicant_id], references: [id])
+  applicant_id String?    @unique
+  employer     Employer?  @relation(fields: [employer_id], references: [id])
+  employer_id  String?    @unique
 
   @@map("users")
 }
@@ -30,6 +31,7 @@ model Employer {
   id          String   @id @default(uuid())
   created_at  DateTime @default(now())
   updated_at  DateTime @updatedAt
+  is_deleted  Boolean  @default(false)
   name        String
   country     String
   city        String
@@ -48,15 +50,15 @@ model Employer {
 }
 
 model Applicant {
-  id           String   @id @default(uuid())
-  created_at   DateTime @default(now())
-  updated_at   DateTime @updatedAt
-  first_name   String   @map("first_name")
-  last_name    String   @map("last_name")
-  phone_number String?  @map("phone_number")
-  introduction String?
+  id              String        @id @default(uuid())
+  created_at      DateTime      @default(now())
+  updated_at      DateTime      @updatedAt
+  is_deleted      Boolean       @default(false)
+  first_name      String        @map("first_name")
+  last_name       String        @map("last_name")
+  phone_number    String?       @map("phone_number")
+  introduction    String?
   job_preferences JobCategory[]
-
 
   // Relations
   user                       User?
@@ -73,6 +75,7 @@ model Doc {
   id         String   @id @default(uuid())
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
+  is_deleted Boolean  @default(false)
   filename   String
   file_url   String   @map("file_url")
   file_type  String   @map("file_type") // e.g., 'cv', 'cover_letter', 'certificate'
@@ -88,6 +91,7 @@ model JobCategory {
   id         String   @id @default(uuid())
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
+  is_deleted Boolean  @default(false)
   category   String   @unique
   name       String
 
@@ -102,6 +106,7 @@ model JobPosting {
   id                  String   @id @default(uuid())
   created_at          DateTime @default(now())
   updated_at          DateTime @updatedAt
+  is_deleted          Boolean  @default(false)
   title               String
   description         String
   hourly_salary_range String   @map("hourly_salary_range")
@@ -124,6 +129,8 @@ model JobPosting {
 model ApplicantDiscardedJob {
   id         String   @id @default(uuid())
   created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_deleted Boolean  @default(false)
 
   // Relations
   job_posting  JobPosting @relation(fields: [job_id], references: [id], onDelete: Cascade)
@@ -138,6 +145,8 @@ model ApplicantDiscardedJob {
 model ApplicantLikedJob {
   id         String   @id @default(uuid())
   created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_deleted Boolean  @default(false)
 
   // Relations
   job_posting  JobPosting @relation(fields: [job_id], references: [id], onDelete: Cascade)
@@ -153,6 +162,7 @@ model EmployerLikedApplicant {
   id         String   @id @default(uuid())
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
+  is_deleted Boolean  @default(false)
 
   // Relations
   applicant    Applicant  @relation(fields: [applicant_id], references: [id], onDelete: Cascade)
@@ -170,6 +180,7 @@ model EmployerDiscardedApplicant {
   id         String   @id @default(uuid())
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
+  is_deleted Boolean  @default(false)
 
   // Relations
   applicant    Applicant  @relation(fields: [applicant_id], references: [id], onDelete: Cascade)
